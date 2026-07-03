@@ -428,13 +428,20 @@ class USwapProvider(private val provider: UProvider) : IMultiSwapProvider {
 
         val amountOut = bestRoute.expectedBuyAmountOrZero
 
-        val amountOutMin = amountOut.subtract(amountOut.multiply(slippage.movePointLeft(2)))
+        // The server's `minBuyAmount` is the enforced floor; `null` means the route is a floating
+        // P2P estimate — nothing guarantees the amount (or applies our slippage), so the confirm
+        // page must not show the "Guaranteed" (amountOutMin) or slippage rows.
+        val effectiveSlippage = if (bestRoute.minBuyAmount != null) slippage else null
+
+        val amountOutMin = effectiveSlippage?.let {
+            amountOut.subtract(amountOut.multiply(it.movePointLeft(2)))
+        }
 
         val fields = buildList {
             recipient?.let {
                 add(DataFieldRecipient(it))
             }
-            DataFieldSlippage.getField(slippage)?.let {
+            DataFieldSlippage.getField(effectiveSlippage)?.let {
                 add(it)
             }
         }
@@ -453,7 +460,7 @@ class USwapProvider(private val provider: UProvider) : IMultiSwapProvider {
             priceImpact = null,
             fields = fields,
             estimatedTime = bestRoute.estimatedTime?.total,
-            slippage = slippage,
+            slippage = effectiveSlippage,
             providerSwapId = bestRoute.uuid,
             fromAsset = assetsMap[tokenIn] ?: deriveIdentifier(tokenIn) ?: throw IllegalStateException("No identifier for tokenIn"),
             toAsset = assetsMap[tokenOut] ?: deriveIdentifier(tokenOut) ?: throw IllegalStateException("No identifier for tokenOut"),
@@ -738,6 +745,10 @@ interface UnstoppableAPI {
             val sellAsset: String?,
             val buyAsset: String?,
             val expectedBuyAmount: BigDecimal?,
+            // The ENFORCED floor the route can deliver (v2 sends an explicit `null` when the
+            // amount is only an estimate — floating-rate P2P, re-priced at deposit). null ⇒ no
+            // guarantee: the confirm page must not render a "Guaranteed" row.
+            val minBuyAmount: BigDecimal?,
             val estimatedTime: EstimatedTime?,
             // EVM ERC20 spender to approve before swapping (1inch/Barter/Circle). On a rate
             // route it is top-level; on a committed route it rides execution.approval.spender.
