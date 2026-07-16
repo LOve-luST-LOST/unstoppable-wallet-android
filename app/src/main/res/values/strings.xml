@@ -560,6 +560,8 @@
     <string name="Send_UnexpectedError">Unexpected error</string>
     <string name="Send_UnexpectedError_Description">Something went wrong while sending your transaction. Please try again or copy the error code and contact support.</string>
 
+    <string name="Send_Error_NodeUnreachable">Could not reach the node. Please check your connection and try again.</string>
+
     <string name="Send_Warning_LowFee">Warning! Risk of getting stuck</string>
     <string name="Send_Error_LowFee">Fee Error</string>
     <string name="Send_Error_LowFee_Description">Fee Rate is too low.</string>
