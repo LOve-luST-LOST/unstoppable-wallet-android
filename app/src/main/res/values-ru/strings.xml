@@ -1803,4 +1803,5 @@
     <string name="PasskeyTerms_DeviceDependency_Description">Для доступа требуется ваше устройство. Потеря доступа может привести к потере средств.</string>
     <string name="PasskeyTerms_LimitedAccess_Description">Может работать не на всех устройствах или платформах.</string>
     <string name="PasskeyTerms_Responsibility_Description">Вы несёте ответственность за доступ к вашему устройству. Unstoppable не сможет восстановить этот кошелёк, если доступ будет утерян.</string>
+    <string name="Send_Error_NodeUnreachable">Не удалось подключиться к узлу. Проверьте подключение и попробуйте снова.</string>
 </resources>

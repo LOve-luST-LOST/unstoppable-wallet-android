@@ -1073,6 +1073,7 @@
     "Send_Error_LowFee_Description": "Fee Rate is too low.",
     "Send_Error_MaximumAmount": "Max. amount %s",
     "Send_Error_MinimumAmount": "Min. amount %s",
+    "Send_Error_NodeUnreachable": "Could not reach the node. Please check your connection and try again.",
     "Send_Error_SendToSelf": "Sending %s to your own address is not allowed. Please enter a different recipient address.",
     "Send_Error_UnsupportedAddress": "Time locking works only when sending to payment addresses starting with 1... (aka BIP44 addresses)",
     "Send_Fee": "Fee",

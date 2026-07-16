@@ -1797,4 +1797,5 @@
     <string name="WalletConnect_Safe">Güvenli</string>
     <string name="WalletConnect_TokenAllowance">Token İzni</string>
     <string name="Watch_Monero_Warning">Monero izleme cüzdanı yalnızca gelen işlemleri gösterir. Görüntülenen bakiye yanlış olabilir.</string>
+    <string name="Send_Error_NodeUnreachable">Düğüme ulaşılamadı. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.</string>
 </resources>
