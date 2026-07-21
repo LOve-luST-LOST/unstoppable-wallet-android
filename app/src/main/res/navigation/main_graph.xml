@@ -44,6 +44,12 @@
         android:id="@+id/manageAccountsFragment"
         android:name="io.horizontalsystems.bankwallet.modules.manageaccounts.ManageAccountsFragment" />
     <fragment
+        android:id="@+id/addWalletFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.manageaccounts.AddWalletFragment" />
+    <fragment
+        android:id="@+id/passkeyTermsFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.manageaccounts.PassKeyTermsFragment" />
+    <fragment
         android:id="@+id/manageAccountFragment"
         android:name="io.horizontalsystems.bankwallet.modules.manageaccount.ManageAccountFragment" />
     <fragment
@@ -244,8 +250,20 @@
         android:id="@+id/createAccountFragment"
         android:name="io.horizontalsystems.bankwallet.modules.createaccount.CreateAccountFragment" />
     <fragment
+        android:id="@+id/createAccountStandardFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.createaccount.CreateAccountStandardFragment" />
+    <fragment
+        android:id="@+id/createAccountPasskeyFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.createaccount.CreateAccountPasskeyFragment" />
+    <fragment
         android:id="@+id/restoreAccountFragment"
         android:name="io.horizontalsystems.bankwallet.modules.restoreaccount.RestoreAccountFragment" />
+    <fragment
+        android:id="@+id/restoreFromPasskeyFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.restoreaccount.RestoreFromPasskeyFragment" />
+    <fragment
+        android:id="@+id/restoreFromPrivateKeyFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.restoreaccount.RestoreFromPrivateKeyFragment" />
     <fragment
         android:id="@+id/importWalletFragment"
         android:name="io.horizontalsystems.bankwallet.modules.importwallet.ImportWalletFragment" />
@@ -289,6 +307,14 @@
         android:name="io.horizontalsystems.bankwallet.modules.moneronetwork.MoneroNetworkFragment"
         android:label="MoneroNetworkFragment" />
     <fragment
+        android:id="@+id/zanoNetworkFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.zanonetwork.ZanoNetworkFragment"
+        android:label="ZanoNetworkFragment" />
+    <fragment
+        android:id="@+id/zcashNetworkFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.zcashnetwork.ZcashNetworkFragment"
+        android:label="ZcashNetworkFragment" />
+    <fragment
         android:id="@+id/btcBlockchainSettingsFragment"
         android:name="io.horizontalsystems.bankwallet.modules.btcblockchainsettings.BtcBlockchainSettingsFragment" />
     <fragment
@@ -330,6 +356,9 @@
     <fragment
         android:id="@+id/swapConfirm"
         android:name="io.horizontalsystems.bankwallet.modules.multiswap.SwapConfirmFragment" />
+    <fragment
+        android:id="@+id/transactionsFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.transactions.TransactionsFragment" />
     <fragment
         android:id="@+id/swapHistoryFragment"
         android:name="io.horizontalsystems.bankwallet.modules.multiswap.history.SwapHistoryFragment" />
@@ -426,6 +455,9 @@
     <dialog
         android:id="@+id/secureSendConfigDialog"
         android:name="io.horizontalsystems.bankwallet.modules.settings.security.securesend.SecureSendConfigDialog" />
+    <dialog
+        android:id="@+id/requestRefundDialog"
+        android:name="io.horizontalsystems.bankwallet.modules.multiswap.history.RequestRefundDialog" />
 
     <!--Wallet Connect-->
     <fragment
@@ -437,6 +469,21 @@
     <fragment
         android:id="@+id/wcListFragment"
         android:name="io.horizontalsystems.bankwallet.modules.walletconnect.list.WCListFragment" />
+    <fragment
+        android:id="@+id/openCryptoPayFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.opencryptopay.OpenCryptoPayFragment" />
+    <fragment
+        android:id="@+id/openCryptoPayEvmConfirmationFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.opencryptopay.OpenCryptoPayEvmConfirmationFragment" />
+    <fragment
+        android:id="@+id/openCryptoPayConfirmationFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.opencryptopay.OpenCryptoPayConfirmationFragment" />
+    <fragment
+        android:id="@+id/openCryptoPayEvmSettingsFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.opencryptopay.OpenCryptoPayEvmSettingsFragment" />
+    <fragment
+        android:id="@+id/openCryptoPayEvmNonceSettingsFragment"
+        android:name="io.horizontalsystems.bankwallet.modules.opencryptopay.OpenCryptoPayEvmNonceSettingsFragment" />
     <fragment
         android:id="@+id/tcListFragment"
         android:name="io.horizontalsystems.bankwallet.modules.tonconnect.TonConnectMainFragment" />
@@ -485,4 +532,10 @@
     <dialog
         android:id="@+id/walletSwitchDialog"
         android:name="io.horizontalsystems.bankwallet.modules.main.WalletSwitchDialog" />
+    <dialog
+        android:id="@+id/createPasskeyNotSupported"
+        android:name="io.horizontalsystems.bankwallet.modules.createaccount.CreatePasskeyNotSupported" />
+    <dialog
+        android:id="@+id/restorePasskeyNotSupported"
+        android:name="io.horizontalsystems.bankwallet.modules.createaccount.RestorePasskeyNotSupported" />
 </navigation>

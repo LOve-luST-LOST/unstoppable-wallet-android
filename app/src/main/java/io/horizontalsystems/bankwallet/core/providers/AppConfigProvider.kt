@@ -72,10 +72,6 @@ class AppConfigProvider(localStorage: ILocalStorage) {
         Translator.getString(R.string.marketApiKey)
     }
 
-    val newsApiKey by lazy {
-        Translator.getString(R.string.cryptoCompareApiKey)
-    }
-
     val openSeaApiKey by lazy {
         Translator.getString(R.string.openSeaApiKey)
     }
@@ -98,6 +94,10 @@ class AppConfigProvider(localStorage: ILocalStorage) {
 
     val oneInchApiKey by lazy {
         Translator.getString(R.string.oneInchApiKey)
+    }
+
+    val appLinksHost by lazy {
+        Translator.getString(R.string.appLinksHost)
     }
 
     val fiatDecimal: Int = 2

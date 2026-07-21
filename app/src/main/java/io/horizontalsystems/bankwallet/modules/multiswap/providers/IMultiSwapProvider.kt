@@ -12,14 +12,15 @@ import java.math.BigDecimal
 interface IMultiSwapProvider {
     val id: String
     val title: String
-    val icon: Int
     val type: SwapProviderType
-    val aml: Boolean
     val amlPrecheck: Boolean
+        get() = false
+    val isEvm: Boolean
         get() = false
     val requireTerms: Boolean
     val riskLevel: RiskLevel
-    fun isSingleChainSwap(tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String): Boolean
+    fun isSingleTransactionSwap(tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String): Boolean
+    fun mevProtectionAllowed(tokenIn: Token, tokenOut: Token): Boolean = false
 
     val titleShort: String
         get() {
@@ -67,8 +68,7 @@ enum class SwapProviderType(val title: String) {
 }
 
 enum class RiskLevel(val title: Int, val icon: Int) {
-    AUTO(R.string.RiskLevel_Auto, R.drawable.shield_check_filled_24),
-    LIMITED(R.string.RiskLevel_Limited, R.drawable.thumbsup_24),
-    CONTROLLED(R.string.RiskLevel_Controlled, R.drawable.ic_warning_filled_24),
-    PRECHECK(R.string.RiskLevel_Precheck, R.drawable.radar_24)
+    EXCELLENT(R.string.RiskLevel_Excellent, R.drawable.star_filled_24),
+    GOOD(R.string.RiskLevel_Good, R.drawable.shield_check_filled_24),
+    FAIR(R.string.RiskLevel_Fair, R.drawable.thumbsup_24)
 }

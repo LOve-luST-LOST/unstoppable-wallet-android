@@ -21,6 +21,7 @@ import io.horizontalsystems.bankwallet.entities.EnabledWallet
 import io.horizontalsystems.bankwallet.entities.LastBlockInfo
 import io.horizontalsystems.bankwallet.entities.LaunchPage
 import io.horizontalsystems.bankwallet.entities.RestoreSettingRecord
+import io.horizontalsystems.bankwallet.entities.SimulateFailSwapMode
 import io.horizontalsystems.bankwallet.entities.SyncMode
 import io.horizontalsystems.bankwallet.entities.TransactionDataSortMode
 import io.horizontalsystems.bankwallet.entities.Wallet
@@ -43,6 +44,7 @@ import io.horizontalsystems.bankwallet.modules.settings.terms.TermsModule
 import io.horizontalsystems.bankwallet.modules.theme.ThemeType
 import io.horizontalsystems.bankwallet.modules.transactions.FilterTransactionType
 import io.horizontalsystems.bitcoincore.core.IPluginData
+import io.horizontalsystems.bitcoincore.models.SignedRawTransaction
 import io.horizontalsystems.bitcoincore.storage.UnspentOutputInfo
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.ethereumkit.models.Address
@@ -84,6 +86,7 @@ interface ILocalStorage {
     var selectedPeriods: List<HsTimePeriod>
     var roiPerformanceCoins: List<PerformanceCoin>
     var marketSearchRecentCoinUids: List<String>
+    var swapRecentTokenQueryIds: List<String>
     var zcashAccountIds: Set<String>
     var autoLockInterval: AutoLockInterval
     var chartIndicatorsEnabled: Boolean
@@ -111,6 +114,8 @@ interface ILocalStorage {
     var balanceTotalCoinUid: String?
     var termsAccepted: Boolean
     var swapTermsAccepted: Boolean
+    var simulateFailSwap: SimulateFailSwapMode
+    var passkeyTermsAccepted: Boolean
     var checkedTerms: List<String>
     var mainShowedOnce: Boolean
     var notificationId: String?
@@ -177,7 +182,6 @@ interface IAccountManager {
     val accounts: List<Account>
     val accountsFlowable: Flowable<List<Account>>
     val accountsDeletedFlowable: Flowable<Unit>
-    val newAccountBackupRequiredFlow: StateFlow<Account?>
 
     fun setActiveAccountId(activeAccountId: String?)
     fun account(id: String): Account?
@@ -187,10 +191,10 @@ interface IAccountManager {
     fun delete(id: String)
     fun clear()
     fun clearAccounts()
-    fun onHandledBackupRequiredNewAccount()
     fun setLevel(level: Int)
     fun updateAccountLevels(accountIds: List<String>, level: Int)
     fun updateMaxLevel(level: Int)
+    fun getRandomWalletName(): String
 }
 
 interface IBackupManager {
@@ -436,6 +440,15 @@ interface ISendBitcoinAdapter {
         utxoFilters: UtxoFilters
     ): BitcoinTransactionRecord?
 
+    fun rawTransaction(
+        amount: BigDecimal,
+        address: String,
+        memo: String?,
+        feeRate: Int,
+        unspentOutputs: List<UnspentOutputInfo>?,
+        utxoFilters: UtxoFilters,
+    ): SignedRawTransaction
+
     fun satoshiToBTC(value: Long): BigDecimal
 }
 
@@ -490,7 +503,13 @@ interface ISendStellarAdapter {
 
 interface ISendMoneroAdapter {
     val balanceData: BalanceData
-    suspend fun send(amount: BigDecimal, address: String, memo: String?)
+    suspend fun send(amount: BigDecimal, address: String, memo: String?): String
+    suspend fun estimateFee(amount: BigDecimal, address: String, memo: String?) : BigDecimal
+}
+
+interface ISendZanoAdapter {
+    val balanceData: BalanceData
+    suspend fun send(amount: BigDecimal, address: String, memo: String?): String
     suspend fun estimateFee(amount: BigDecimal, address: String, memo: String?) : BigDecimal
 }
 
@@ -501,9 +520,9 @@ interface ISendTronAdapter {
     suspend fun estimateFee(amount: BigDecimal, to: TronAddress): List<Fee>
     suspend fun estimateFee(transaction: CreatedTransaction): List<Fee>
     suspend fun estimateFee(contract: Contract): List<Fee>
-    suspend fun send(amount: BigDecimal, to: TronAddress, feeLimit: Long?)
-    suspend fun send(contract: Contract, feeLimit: Long?)
-    suspend fun send(createdTransaction: CreatedTransaction)
+    suspend fun send(amount: BigDecimal, to: TronAddress, feeLimit: Long?): String
+    suspend fun send(contract: Contract, feeLimit: Long?): String
+    suspend fun send(createdTransaction: CreatedTransaction): String
     suspend fun isAddressActive(address: TronAddress): Boolean
     fun isOwnAddress(address: TronAddress): Boolean
 }

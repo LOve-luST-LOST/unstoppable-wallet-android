@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.horizontalsystems.bankwallet.R
 import io.horizontalsystems.bankwallet.modules.multiswap.providers.RiskLevel
+import io.horizontalsystems.bankwallet.modules.multiswap.ui.riskLevelColor
 import io.horizontalsystems.bankwallet.ui.compose.ComposeAppTheme
+import io.horizontalsystems.bankwallet.ui.compose.components.HSpacer
 import io.horizontalsystems.bankwallet.ui.compose.components.HsDivider
 import io.horizontalsystems.bankwallet.ui.compose.components.VSpacer
 import io.horizontalsystems.bankwallet.ui.extensions.BaseComposableBottomSheetFragment
@@ -111,8 +112,8 @@ fun RiskLevelList() {
     CellPrimary(
         middle = {
             RiskLevelCell(
-                RiskLevel.AUTO,
-                stringResource(R.string.RiskLevel_Auto_Description)
+                RiskLevel.EXCELLENT,
+                stringResource(R.string.RiskLevel_Excellent_Description)
             )
 
         }
@@ -121,8 +122,8 @@ fun RiskLevelList() {
     CellPrimary(
         middle = {
             RiskLevelCell(
-                RiskLevel.LIMITED,
-                stringResource(R.string.RiskLevel_Limited_Description)
+                RiskLevel.GOOD,
+                stringResource(R.string.RiskLevel_Good_Description)
             )
         }
     )
@@ -130,17 +131,8 @@ fun RiskLevelList() {
     CellPrimary(
         middle = {
             RiskLevelCell(
-                RiskLevel.PRECHECK,
-                stringResource(R.string.RiskLevel_Precheck_Description)
-            )
-        }
-    )
-    HsDivider()
-    CellPrimary(
-        middle = {
-            RiskLevelCell(
-                RiskLevel.CONTROLLED,
-                stringResource(R.string.RiskLevel_Controlled_Description)
+                RiskLevel.FAIR,
+                stringResource(R.string.RiskLevel_Fair_Description)
             )
         }
     )
@@ -148,27 +140,22 @@ fun RiskLevelList() {
 
 @Composable
 private fun RiskLevelCell(level: RiskLevel, description: String) {
-    val color = when (level) {
-        RiskLevel.AUTO -> ComposeAppTheme.colors.remus
-        RiskLevel.LIMITED -> ComposeAppTheme.colors.ocean
-        RiskLevel.CONTROLLED -> ComposeAppTheme.colors.jacob
-        RiskLevel.PRECHECK -> ComposeAppTheme.colors.leah
-    }
+    val color = riskLevelColor(level)
 
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Icon(
                 painter = painterResource(level.icon),
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(20.dp)
             )
+            HSpacer(8.dp)
             Text(
                 text = stringResource(level.title),
-                style = ComposeAppTheme.typography.captionSB,
+                style = ComposeAppTheme.typography.subheadSB,
                 color = color,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

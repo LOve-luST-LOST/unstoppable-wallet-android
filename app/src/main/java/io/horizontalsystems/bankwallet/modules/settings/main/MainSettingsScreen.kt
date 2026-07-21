@@ -22,6 +22,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,9 +48,9 @@ import io.horizontalsystems.bankwallet.core.stats.StatEvent
 import io.horizontalsystems.bankwallet.core.stats.StatPage
 import io.horizontalsystems.bankwallet.core.stats.StatPremiumTrigger
 import io.horizontalsystems.bankwallet.core.stats.stat
+import io.horizontalsystems.bankwallet.entities.SimulateFailSwapMode
 import io.horizontalsystems.bankwallet.modules.contacts.ContactsFragment
 import io.horizontalsystems.bankwallet.modules.contacts.Mode
-import io.horizontalsystems.bankwallet.modules.manageaccount.dialogs.BackupRequiredDialog
 import io.horizontalsystems.bankwallet.modules.manageaccounts.ManageAccountsModule
 import io.horizontalsystems.bankwallet.modules.settings.banners.DonateBanner
 import io.horizontalsystems.bankwallet.modules.settings.banners.SubscriptionBanner
@@ -67,6 +71,7 @@ import io.horizontalsystems.bankwallet.ui.compose.components.caption_grey
 import io.horizontalsystems.bankwallet.ui.compose.components.cell.SectionPremiumUniversalLawrence
 import io.horizontalsystems.bankwallet.ui.compose.components.subhead1_grey
 import io.horizontalsystems.bankwallet.ui.helpers.LinkHelper
+import io.horizontalsystems.dapp.core.DAppManager
 import io.horizontalsystems.subscriptions.core.PrioritySupport
 import io.horizontalsystems.subscriptions.core.SecureSend
 
@@ -138,7 +143,7 @@ private fun SettingSections(
     BannerCarousel(banners = banners)
 
     CellUniversalLawrenceSection(
-        listOf({
+        listOfNotNull({
             HsSettingCell(
                 R.string.SettingsSecurity_ManageKeys,
                 R.drawable.wallet_24,
@@ -186,50 +191,39 @@ private fun SettingSections(
                     stat(page = StatPage.AboutApp, event = StatEvent.Open(StatPage.Privacy))
                 }
             )
-        }, {
-            HsSettingCell(
-                R.string.DAppConnection_Title,
-                R.drawable.link_24,
-                value = (uiState.wcCounterType as? MainSettingsModule.CounterType.SessionCounter)?.number?.toString(),
-                counterBadge = (uiState.wcCounterType as? MainSettingsModule.CounterType.PendingRequestCounter)?.number?.toString(),
-                onClick = {
-                    when (val state = viewModel.walletConnectSupportState) {
-                        WCManager.SupportState.Supported -> {
-                            navController.slideFromRight(R.id.wcListFragment)
+        }, if (DAppManager.isAvailable) { {
+                HsSettingCell(
+                    R.string.DAppConnection_Title,
+                    R.drawable.link_24,
+                    value = (uiState.wcCounterType as? MainSettingsModule.CounterType.SessionCounter)?.number?.toString(),
+                    counterBadge = (uiState.wcCounterType as? MainSettingsModule.CounterType.PendingRequestCounter)?.number?.toString(),
+                    onClick = {
+                        when (val state = viewModel.walletConnectSupportState) {
+                            WCManager.SupportState.Supported -> {
+                                navController.slideFromRight(R.id.wcListFragment)
 
-                            stat(
-                                page = StatPage.Settings,
-                                event = StatEvent.Open(StatPage.WalletConnect)
-                            )
-                        }
+                                stat(
+                                    page = StatPage.Settings,
+                                    event = StatEvent.Open(StatPage.WalletConnect)
+                                )
+                            }
 
-                        WCManager.SupportState.NotSupportedDueToNoActiveAccount -> {
-                            navController.slideFromBottom(R.id.wcErrorNoAccountFragment)
-                        }
+                            WCManager.SupportState.NotSupportedDueToNoActiveAccount -> {
+                                navController.slideFromBottom(R.id.wcErrorNoAccountFragment)
+                            }
 
-                        is WCManager.SupportState.NotSupportedDueToNonBackedUpAccount -> {
-                            val text = Translator.getString(R.string.WalletConnect_Error_NeedBackup)
-                            navController.slideFromBottom(
-                                R.id.backupRequiredDialog,
-                                BackupRequiredDialog.Input(state.account, text)
-                            )
-
-                            stat(
-                                page = StatPage.Settings,
-                                event = StatEvent.Open(StatPage.BackupRequired)
-                            )
-                        }
-
-                        is WCManager.SupportState.NotSupported -> {
-                            navController.slideFromBottom(
-                                R.id.wcAccountTypeNotSupportedDialog,
-                                WCAccountTypeNotSupportedDialog.Input(state.accountTypeDescription)
-                            )
+                            is WCManager.SupportState.NotSupported -> {
+                                navController.slideFromBottom(
+                                    R.id.wcAccountTypeNotSupportedDialog,
+                                    WCAccountTypeNotSupportedDialog.Input(state.accountTypeDescription)
+                                )
+                            }
                         }
                     }
-                }
-            )
-        },
+                )
+            } } else {
+                null
+            },
 //            {
 //            HsSettingCell(
 //                title = R.string.Settings_TonConnect,
@@ -459,7 +453,44 @@ private fun SettingSections(
         }
     )
 
+    if (BuildConfig.DEBUG) {
+        VSpacer(24.dp)
+
+        DebugSettingsSection()
+    }
+
     VSpacer(32.dp)
+}
+
+@Composable
+private fun DebugSettingsSection() {
+    var simulateFailSwap by remember { mutableStateOf(App.localStorage.simulateFailSwap) }
+
+    CellUniversalLawrenceSection(
+        listOf {
+            RowUniversal(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                onClick = {
+                    // Cycle None -> Server -> Local -> None
+                    val modes = SimulateFailSwapMode.entries
+                    val next = modes[(simulateFailSwap.ordinal + 1) % modes.size]
+                    simulateFailSwap = next
+                    App.localStorage.simulateFailSwap = next
+                }
+            ) {
+                body_leah(
+                    text = "Simulate Fail Swap",
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f)
+                )
+                subhead1_grey(
+                    text = simulateFailSwap.name.lowercase(),
+                    maxLines = 1,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
+    )
 }
 
 @Composable

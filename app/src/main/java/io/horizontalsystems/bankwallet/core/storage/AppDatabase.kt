@@ -50,6 +50,11 @@ import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_72_73
 import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_73_74
 import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_74_75
 import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_75_76
+import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_76_77
+import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_77_78
+import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_78_79
+import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_79_80
+import io.horizontalsystems.bankwallet.core.storage.migrations.Migration_80_81
 import io.horizontalsystems.bankwallet.entities.ActiveAccount
 import io.horizontalsystems.bankwallet.entities.BlockchainSettingRecord
 import io.horizontalsystems.bankwallet.entities.EnabledWallet
@@ -59,12 +64,16 @@ import io.horizontalsystems.bankwallet.entities.EvmMethodLabel
 import io.horizontalsystems.bankwallet.entities.EvmSyncSourceRecord
 import io.horizontalsystems.bankwallet.entities.LogEntry
 import io.horizontalsystems.bankwallet.entities.MoneroNodeRecord
+import io.horizontalsystems.bankwallet.entities.OcpPaymentRecord
+import io.horizontalsystems.bankwallet.entities.ZanoNodeRecord
+import io.horizontalsystems.bankwallet.entities.ZcashEndpointRecord
 import io.horizontalsystems.bankwallet.entities.RecentAddress
 import io.horizontalsystems.bankwallet.entities.RestoreSettingRecord
 import io.horizontalsystems.bankwallet.entities.ScannedTransaction
 import io.horizontalsystems.bankwallet.entities.SpamScanState
 import io.horizontalsystems.bankwallet.entities.StatRecord
 import io.horizontalsystems.bankwallet.entities.SwapProviderAssetRecord
+import io.horizontalsystems.bankwallet.entities.SwapProviderChainRecord
 import io.horizontalsystems.bankwallet.entities.SwapRecord
 import io.horizontalsystems.bankwallet.entities.SyncerState
 import io.horizontalsystems.bankwallet.entities.TokenAutoEnabledBlockchain
@@ -81,7 +90,7 @@ import io.horizontalsystems.bankwallet.modules.profeatures.storage.ProFeaturesSe
 import io.horizontalsystems.bankwallet.modules.walletconnect.storage.WCSessionDao
 import io.horizontalsystems.bankwallet.modules.walletconnect.storage.WalletConnectV2Session
 
-@Database(version = 76, exportSchema = false, entities = [
+@Database(version = 81, exportSchema = false, entities = [
     EnabledWallet::class,
     EnabledWalletCache::class,
     AccountRecord::class,
@@ -108,8 +117,12 @@ import io.horizontalsystems.bankwallet.modules.walletconnect.storage.WalletConne
     SpamScanState::class,
     RecentAddress::class,
     MoneroNodeRecord::class,
+    ZanoNodeRecord::class,
+    ZcashEndpointRecord::class,
     SwapProviderAssetRecord::class,
+    SwapProviderChainRecord::class,
     SwapRecord::class,
+    OcpPaymentRecord::class,
 ])
 
 @TypeConverters(DatabaseConverters::class)
@@ -136,8 +149,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun scannedTransactionDao(): ScannedTransactionDao
     abstract fun recentAddressDao(): RecentAddressDao
     abstract fun moneroNodeDao(): MoneroNodeDao
+    abstract fun zanoNodeDao(): ZanoNodeDao
+    abstract fun zcashEndpointDao(): ZcashEndpointDao
     abstract fun swapProviderAssetDao(): SwapProviderAssetDao
+    abstract fun swapProviderChainDao(): SwapProviderChainDao
     abstract fun swapRecordDao(): SwapRecordDao
+    abstract fun ocpPaymentDao(): OcpPaymentDao
 
     companion object {
 
@@ -153,55 +170,60 @@ abstract class AppDatabase : RoomDatabase() {
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "dbBankWallet")
 //                    .fallbackToDestructiveMigration()
-                    .allowMainThreadQueries()
-                    .addMigrations(
-                            Migration_31_32,
-                            Migration_32_33,
-                            Migration_33_34,
-                            Migration_34_35,
-                            Migration_35_36,
-                            Migration_36_37,
-                            Migration_37_38,
-                            Migration_38_39,
-                            Migration_39_40,
-                            Migration_40_41,
-                            Migration_41_42,
-                            Migration_42_43,
-                            Migration_43_44,
-                            Migration_44_45,
-                            Migration_45_46,
-                            Migration_46_47,
-                            Migration_47_48,
-                            Migration_48_49,
-                            Migration_49_50,
-                            Migration_50_51,
-                            Migration_51_52,
-                            Migration_52_53,
-                            Migration_53_54,
-                            Migration_54_55,
-                            Migration_55_56,
-                            Migration_56_57,
-                            Migration_57_58,
-                            Migration_58_59,
-                            Migration_59_60,
-                            Migration_60_61,
-                            Migration_61_62,
-                            Migration_62_63,
-                            Migration_63_64,
-                            Migration_64_65,
-                            Migration_65_66,
-                            Migration_66_67,
-                            Migration_67_68,
-                            Migration_68_69,
-                            Migration_69_70,
-                            Migration_70_71,
-                            Migration_71_72,
-                            Migration_72_73,
-                            Migration_73_74,
-                            Migration_74_75,
+                .allowMainThreadQueries()
+                .addMigrations(
+                    Migration_31_32,
+                    Migration_32_33,
+                    Migration_33_34,
+                    Migration_34_35,
+                    Migration_35_36,
+                    Migration_36_37,
+                    Migration_37_38,
+                    Migration_38_39,
+                    Migration_39_40,
+                    Migration_40_41,
+                    Migration_41_42,
+                    Migration_42_43,
+                    Migration_43_44,
+                    Migration_44_45,
+                    Migration_45_46,
+                    Migration_46_47,
+                    Migration_47_48,
+                    Migration_48_49,
+                    Migration_49_50,
+                    Migration_50_51,
+                    Migration_51_52,
+                    Migration_52_53,
+                    Migration_53_54,
+                    Migration_54_55,
+                    Migration_55_56,
+                    Migration_56_57,
+                    Migration_57_58,
+                    Migration_58_59,
+                    Migration_59_60,
+                    Migration_60_61,
+                    Migration_61_62,
+                    Migration_62_63,
+                    Migration_63_64,
+                    Migration_64_65,
+                    Migration_65_66,
+                    Migration_66_67,
+                    Migration_67_68,
+                    Migration_68_69,
+                    Migration_69_70,
+                    Migration_70_71,
+                    Migration_71_72,
+                    Migration_72_73,
+                    Migration_73_74,
+                    Migration_74_75,
                     Migration_75_76,
-                    )
-                    .build()
+                    Migration_76_77,
+                    Migration_77_78,
+                    Migration_78_79,
+                    Migration_79_80,
+                    Migration_80_81,
+                )
+                .build()
         }
 
     }

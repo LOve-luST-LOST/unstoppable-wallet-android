@@ -18,6 +18,8 @@ import kotlinx.coroutines.withTimeout
 import java.math.BigDecimal
 
 class SwapQuoteService {
+    private val tag = "SwapQuoteService"
+
     private val allProviders = MultiSwapProviderRegistry.allProviders
 
     private var amountIn: BigDecimal? = null
@@ -45,23 +47,33 @@ class SwapQuoteService {
 
     private var coroutineScope = CoroutineScope(Dispatchers.Default)
     private var quotingJob: Job? = null
+    private var startProvidersJob: Job? = null
 
     fun start() {
         coroutineScope.launch {
-            allProviders
-                .map {
-                    async {
-                        try {
-                            it.start()
-                        } catch (e: Throwable) {
-                            Log.d("AAA", "error on starting ${it.id}, $e", e)
-                        }
-                    }
-                }
-                .awaitAll()
-
+            startProviders()
             runQuotation()
         }
+    }
+
+    fun restart(onRestart: () -> Unit) {
+        startProvidersJob?.cancel()
+        startProvidersJob = coroutineScope.launch {
+            startProviders()
+            onRestart()
+        }
+    }
+
+    private suspend fun CoroutineScope.startProviders() {
+        allProviders.map { provider ->
+            async {
+                try {
+                    provider.start()
+                } catch (e: Throwable) {
+                    Log.e(tag, "error on starting ${provider.id}", e)
+                }
+            }
+        }.awaitAll()
     }
 
     private fun emitState() {
@@ -143,7 +155,7 @@ class SwapQuoteService {
                             SwapProviderQuote(provider = provider, swapQuote = quote)
                         }
                     } catch (e: Throwable) {
-                        Log.d("AAA", "fetchQuoteError: ${provider.id}", e)
+                        Log.e(tag, "fetchQuoteError: ${provider.id}", e)
                         null
                     }
                 }
@@ -165,11 +177,12 @@ class SwapQuoteService {
     fun setTokenIn(token: Token) {
         if (tokenIn == token) return
 
-        tokenIn = token
         preferredProvider = null
         if (tokenOut == token) {
-            tokenOut = null
+            // selected token is already on the other side, swap places instead of clearing it
+            tokenOut = tokenIn
         }
+        tokenIn = token
 
         runQuotation()
     }
@@ -177,11 +190,12 @@ class SwapQuoteService {
     fun setTokenOut(token: Token) {
         if (tokenOut == token) return
 
-        tokenOut = token
         preferredProvider = null
         if (tokenIn == token) {
-            tokenIn = null
+            // selected token is already on the other side, swap places instead of clearing it
+            tokenIn = tokenOut
         }
+        tokenOut = token
 
         runQuotation()
     }
@@ -208,7 +222,7 @@ class SwapQuoteService {
         runQuotation(silent = true)
     }
 
-    fun onActionStarted() {
+    fun onActionStarted(quote: SwapProviderQuote?) {
         preferredProvider = quote?.provider
     }
 

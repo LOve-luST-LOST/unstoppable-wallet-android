@@ -11,6 +11,7 @@ import io.horizontalsystems.bankwallet.core.address.AddressCheckType
 import io.horizontalsystems.bankwallet.entities.AccountType
 import io.horizontalsystems.bankwallet.entities.AppVersion
 import io.horizontalsystems.bankwallet.entities.LaunchPage
+import io.horizontalsystems.bankwallet.entities.SimulateFailSwapMode
 import io.horizontalsystems.bankwallet.entities.SyncMode
 import io.horizontalsystems.bankwallet.modules.amount.AmountInputType
 import io.horizontalsystems.bankwallet.modules.balance.BalanceSortType
@@ -66,6 +67,7 @@ class LocalStorageManager(
     private val BALANCE_HIDDEN = "balance_hidden"
     private val TERMS_AGREED = "terms_agreed"
     private val SWAP_TERMS_AGREED = "swap_terms_agreed"
+    private val PASSKEY_TERMS_ACCEPTED = "passkey_terms_accepted"
     private val CHECKED_TERMS = "checked_terms"
     private val MARKET_CURRENT_TAB = "market_current_tab"
     private val BIOMETRIC_ENABLED = "biometric_auth_enabled"
@@ -146,6 +148,13 @@ class LocalStorageManager(
         get() = preferences.getString("marketSearchRecentCoinUids", null)?.split(",") ?: listOf()
         set(value) {
             preferences.edit().putString("marketSearchRecentCoinUids", value.joinToString(",")).apply()
+        }
+
+    override var swapRecentTokenQueryIds: List<String>
+        get() = preferences.getString("swapRecentTokenQueryIds", null)
+            ?.split(",")?.filter { it.isNotBlank() } ?: listOf()
+        set(value) {
+            preferences.edit { putString("swapRecentTokenQueryIds", value.joinToString(",")) }
         }
 
     override var zcashAccountIds: Set<String>
@@ -413,6 +422,18 @@ class LocalStorageManager(
         get() = preferences.getBoolean(SWAP_TERMS_AGREED, false)
         set(value) {
             preferences.edit().putBoolean(SWAP_TERMS_AGREED, value).commit()
+        }
+
+    override var simulateFailSwap: SimulateFailSwapMode
+        get() = SimulateFailSwapMode.fromString(preferences.getString("simulate-failed-swap", null))
+        set(value) {
+            preferences.edit().putString("simulate-failed-swap", value.name).apply()
+        }
+
+    override var passkeyTermsAccepted: Boolean
+        get() = preferences.getBoolean(PASSKEY_TERMS_ACCEPTED, false)
+        set(value) {
+            preferences.edit(commit = true) { putBoolean(PASSKEY_TERMS_ACCEPTED, value) }
         }
 
     override var checkedTerms: List<String>

@@ -1,9 +1,9 @@
 package io.horizontalsystems.bankwallet.modules.multiswap.providers
 
-import io.horizontalsystems.bankwallet.R
 import io.horizontalsystems.bankwallet.core.App
 import io.horizontalsystems.bankwallet.core.blockTime
 import io.horizontalsystems.bankwallet.core.convertedError
+import io.horizontalsystems.bankwallet.core.isEvm
 import io.horizontalsystems.bankwallet.modules.multiswap.EvmBlockchainHelper
 import io.horizontalsystems.bankwallet.modules.multiswap.SwapFinalQuote
 import io.horizontalsystems.bankwallet.modules.multiswap.SwapQuote
@@ -25,11 +25,10 @@ import java.math.BigDecimal
 object OneInchProvider : IMultiSwapProvider {
     override val id = "oneinch"
     override val title = "1inch"
-    override val icon = R.drawable.swap_provider_1inch
     override val type = SwapProviderType.DEX
-    override val aml = true
+    override val isEvm = true
     override val requireTerms = false
-    override val riskLevel = RiskLevel.CONTROLLED
+    override val riskLevel = RiskLevel.FAIR
     private val oneInchKit by lazy { OneInchKit.getInstance(App.appConfigProvider.oneInchApiKey) }
     private const val PARTNER_FEE: Float = 1F
     private val PARTNER_ADDRESS: String = App.appConfigProvider.oneInchPartnerFeeAddress
@@ -37,7 +36,10 @@ object OneInchProvider : IMultiSwapProvider {
     // TODO take evmCoinAddress from oneInchKit
     private val evmCoinAddress = Address("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
 
-    override fun isSingleChainSwap(tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String) = true
+    override fun isSingleTransactionSwap(tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String) = true
+
+    override fun mevProtectionAllowed(tokenIn: Token, tokenOut: Token): Boolean =
+        tokenIn.blockchainType == tokenOut.blockchainType && tokenIn.blockchainType.isEvm
 
     override fun supports(blockchainType: BlockchainType) = when (blockchainType) {
         BlockchainType.Ethereum,

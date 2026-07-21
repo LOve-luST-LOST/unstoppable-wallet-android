@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import io.horizontalsystems.bankwallet.core.App
 import io.horizontalsystems.bankwallet.core.managers.MoneroNodeManager.MoneroNode
+import io.horizontalsystems.bankwallet.core.managers.ZanoNodeManager.ZanoNode
+import io.horizontalsystems.bankwallet.core.managers.ZcashLightWalletEndpointManager.ZcashEndpoint
 import io.horizontalsystems.bankwallet.core.order
 import io.horizontalsystems.bankwallet.entities.BtcRestoreMode
 import io.horizontalsystems.bankwallet.entities.EvmSyncSource
@@ -22,6 +24,8 @@ object BlockchainSettingsModule {
                     App.evmSyncSourceManager,
                     App.solanaRpcSourceManager,
                     App.moneroNodeManager,
+                    App.zanoNodeManager,
+                    App.zcashEndpointManager,
                     App.marketKit
                 )
             return BlockchainSettingsViewModel(service) as T
@@ -56,6 +60,16 @@ object BlockchainSettingsModule {
         class Monero(
             override val blockchain: Blockchain,
             val node: MoneroNode
+        ) : BlockchainItem()
+
+        class Zano(
+            override val blockchain: Blockchain,
+            val node: ZanoNode
+        ) : BlockchainItem()
+
+        class Zcash(
+            override val blockchain: Blockchain,
+            val endpoint: ZcashEndpoint
         ) : BlockchainItem()
 
         val order

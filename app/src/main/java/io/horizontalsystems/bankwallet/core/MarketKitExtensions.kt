@@ -141,6 +141,9 @@ val TokenQuery.isSupported: Boolean
         BlockchainType.Monero -> {
             tokenType is TokenType.Native
         }
+        BlockchainType.Zano -> {
+            tokenType is TokenType.Native || tokenType is TokenType.ZanoAsset
+        }
         is BlockchainType.Unsupported -> false
     }
 
@@ -167,6 +170,7 @@ val Blockchain.description: String
         BlockchainType.Ton -> "TON"
         BlockchainType.Stellar -> "XLM, Stellar assets"
         BlockchainType.Monero -> "XMR"
+        BlockchainType.Zano -> "ZANO"
         else -> ""
     }
 
@@ -181,6 +185,7 @@ val BlockchainType.imageUrl: String
 val BlockchainType.restoreSettingTypes: List<RestoreSettingType>
     get() = when (this) {
         BlockchainType.Monero,
+        BlockchainType.Zano,
         BlockchainType.Zcash -> listOf(RestoreSettingType.BirthdayHeight)
         else -> listOf()
     }
@@ -191,24 +196,25 @@ private val blockchainOrderMap: Map<BlockchainType, Int> by lazy {
         BlockchainType.Bitcoin,
         BlockchainType.Ethereum,
         BlockchainType.Monero,
-        BlockchainType.Tron,
         BlockchainType.Zcash,
-        BlockchainType.Dash,
-        BlockchainType.Litecoin,
+        BlockchainType.Zano,
         BlockchainType.BinanceSmartChain,
-        BlockchainType.Polygon,
-        BlockchainType.Base,
         BlockchainType.Solana,
+        BlockchainType.Tron,
+        BlockchainType.Base,
+        BlockchainType.Polygon,
         BlockchainType.ArbitrumOne,
         BlockchainType.Optimism,
-        BlockchainType.Avalanche,
         BlockchainType.Stellar,
-        BlockchainType.Gnosis,
-        BlockchainType.ZkSync,
-        BlockchainType.Ton,
+        BlockchainType.Dash,
+        BlockchainType.Litecoin,
         BlockchainType.BitcoinCash,
-        BlockchainType.Fantom,
+        BlockchainType.Avalanche,
+        BlockchainType.Ton,
         BlockchainType.ECash,
+        BlockchainType.ZkSync,
+        BlockchainType.Gnosis,
+        BlockchainType.Fantom,
     ).forEachIndexed { index, blockchainType ->
         map[blockchainType] = index
     }
@@ -259,6 +265,7 @@ val BlockchainType.title: String
     BlockchainType.Ton -> "Ton"
     BlockchainType.Stellar -> "Stellar"
     BlockchainType.Monero -> "Monero"
+    BlockchainType.Zano -> "Zano"
     is BlockchainType.Unsupported -> this.uid
 }
 
@@ -338,6 +345,7 @@ val BlockchainType.isEvm: Boolean
         is BlockchainType.Unsupported,
         BlockchainType.Zcash,
         BlockchainType.Monero,
+        BlockchainType.Zano,
             -> false
     }
 
@@ -358,6 +366,7 @@ fun BlockchainType.supports(accountType: AccountType): Boolean {
                 BlockchainType.Gnosis,
                 BlockchainType.Litecoin,
                 BlockchainType.Monero,
+                BlockchainType.Zano,
                 BlockchainType.Optimism,
                 BlockchainType.Polygon,
                 BlockchainType.Solana,
@@ -641,6 +650,7 @@ val TokenType.meta: String?
     get() = when (this) {
         is TokenType.Derived -> this.derivation.name
         is TokenType.AddressTyped -> this.type.name
+        is TokenType.ZanoAsset -> this.reference
         else -> null
     }
 
@@ -667,6 +677,7 @@ val BlockchainType.Companion.supported: List<BlockchainType>
         BlockchainType.Ton,
         BlockchainType.Stellar,
         BlockchainType.Monero,
+        BlockchainType.Zano,
     )
 
 val CoinPrice.diff: BigDecimal?

@@ -18,12 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +59,7 @@ import io.horizontalsystems.bankwallet.ui.compose.components.ButtonPrimaryYellow
 import io.horizontalsystems.bankwallet.ui.compose.components.HsDivider
 import io.horizontalsystems.bankwallet.ui.compose.components.HsImageCircle
 import io.horizontalsystems.bankwallet.ui.compose.components.MenuItem
+import io.horizontalsystems.bankwallet.ui.compose.components.rememberAsyncAction
 import io.horizontalsystems.bankwallet.ui.compose.components.VSpacer
 import io.horizontalsystems.bankwallet.ui.helpers.TextHelper
 import io.horizontalsystems.bankwallet.uiv3.components.AlertCard
@@ -186,7 +182,6 @@ private fun SwapConfirmInternal(
     viewModel: SwapConfirmViewModel,
     uiState: SwapConfirmUiState,
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val view = LocalView.current
 
     val onClickSettings = if (uiState.hasSettings) {
@@ -230,7 +225,7 @@ private fun SwapConfirmInternal(
             }
         },
         buttonsSlot = {
-            if (!uiState.validQuote) {
+            if (!uiState.validQuote || uiState.expired) {
                 ButtonPrimaryDefault(
                     modifier = Modifier.fillMaxWidth(),
                     title = stringResource(R.string.Button_Refresh),
@@ -239,17 +234,13 @@ private fun SwapConfirmInternal(
                     },
                 )
             } else {
-                var buttonEnabled by remember { mutableStateOf(true) }
-                var swapButtonTitle by remember { mutableIntStateOf(R.string.Swap) }
+                val swapAction = rememberAsyncAction()
                 ButtonPrimaryYellow(
                     modifier = Modifier.fillMaxWidth(),
-                    title = stringResource(swapButtonTitle),
-                    enabled = buttonEnabled && !uiState.loading,
+                    title = stringResource(if (swapAction.inProgress) R.string.Swap_Swapping else R.string.Swap),
+                    enabled = !swapAction.inProgress && !uiState.loading,
                     onClick = {
-                        coroutineScope.launch {
-                            buttonEnabled = false
-                            swapButtonTitle = R.string.Swap_Swapping
-
+                        swapAction.run {
                             try {
                                 viewModel.swap()
 
@@ -260,9 +251,6 @@ private fun SwapConfirmInternal(
                             } catch (t: Throwable) {
                                 navController.slideFromBottom(R.id.errorBottomSheet, ErrorBottomSheet.Input(t.message ?: t.javaClass.simpleName))
                             }
-
-                            swapButtonTitle = R.string.Swap
-                            buttonEnabled = true
                         }
                     },
                 )

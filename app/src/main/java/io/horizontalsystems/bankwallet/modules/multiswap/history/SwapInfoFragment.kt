@@ -22,6 +22,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,15 +40,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.horizontalsystems.bankwallet.R
 import io.horizontalsystems.bankwallet.core.BaseComposeFragment
+import io.horizontalsystems.bankwallet.core.slideFromBottom
 import io.horizontalsystems.bankwallet.ui.compose.ComposeAppTheme
 import io.horizontalsystems.bankwallet.ui.compose.components.HsDivider
 import io.horizontalsystems.bankwallet.ui.compose.components.HsImageCircle
 import io.horizontalsystems.bankwallet.ui.compose.components.VSpacer
-import io.horizontalsystems.bankwallet.ui.compose.components.subhead2_grey
 import io.horizontalsystems.bankwallet.ui.compose.components.subheadSB_grey
 import io.horizontalsystems.bankwallet.ui.helpers.LinkHelper
 import io.horizontalsystems.bankwallet.ui.helpers.TextHelper
+import io.horizontalsystems.bankwallet.modules.evmfee.ButtonsGroupWithShade
+import io.horizontalsystems.bankwallet.uiv3.components.AlertCard
+import io.horizontalsystems.bankwallet.uiv3.components.AlertFormat
+import io.horizontalsystems.bankwallet.uiv3.components.AlertType
 import io.horizontalsystems.bankwallet.uiv3.components.HSScaffold
+import io.horizontalsystems.bankwallet.uiv3.components.controls.ButtonVariant
+import io.horizontalsystems.bankwallet.uiv3.components.controls.HSButton
 import io.horizontalsystems.bankwallet.uiv3.components.cell.CellMiddleInfo
 import io.horizontalsystems.bankwallet.uiv3.components.cell.CellMiddleInfoTextIcon
 import io.horizontalsystems.bankwallet.uiv3.components.cell.CellPrimary
@@ -54,6 +65,7 @@ import io.horizontalsystems.bankwallet.uiv3.components.cell.CellRightNavigation
 import io.horizontalsystems.bankwallet.uiv3.components.cell.CellSecondary
 import io.horizontalsystems.bankwallet.uiv3.components.cell.hs
 import io.horizontalsystems.core.helpers.HudHelper
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
 class SwapInfoFragment : BaseComposeFragment() {
@@ -81,6 +93,38 @@ fun SwapInfoScreen(recordId: Int, navController: NavController) {
     HSScaffold(
         title = stringResource(R.string.SwapInfo_Title),
         onBack = navController::popBackStack,
+        bottomBar = {
+            if (uiState.status == SwapStatus.ActionRequired) {
+                val coroutineScope = rememberCoroutineScope()
+                var refundLoading by remember { mutableStateOf(false) }
+                ButtonsGroupWithShade {
+                    HSButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        title = stringResource(R.string.SwapInfo_RequestRefund),
+                        variant = ButtonVariant.Primary,
+                        loadingIndicator = refundLoading,
+                        enabled = !refundLoading,
+                        onClick = {
+                            refundLoading = true
+                            coroutineScope.launch {
+                                try {
+                                    viewModel.prepareRefundData()?.let { data ->
+                                        navController.slideFromBottom(
+                                            R.id.requestRefundDialog,
+                                            RequestRefundDialog.Input(data),
+                                        )
+                                    }
+                                } finally {
+                                    refundLoading = false
+                                }
+                            }
+                        },
+                    )
+                }
+            }
+        },
     ) {
         Column(
             modifier = Modifier
@@ -170,14 +214,16 @@ fun SwapInfoScreen(recordId: Int, navController: NavController) {
                     .padding(vertical = 8.dp),
             ) {
                 // Provider
-                CellSecondary(
-                    middle = {
-                        CellMiddleInfoTextIcon(text = stringResource(R.string.SwapInfo_Provider).hs)
-                    },
-                    right = {
-                        CellRightInfoTextIcon(text = uiState.providerName.hs(color = leah))
-                    },
-                )
+                if (uiState.showProvider) {
+                    CellSecondary(
+                        middle = {
+                            CellMiddleInfoTextIcon(text = stringResource(R.string.SwapInfo_Provider).hs)
+                        },
+                        right = {
+                            CellRightInfoTextIcon(text = uiState.providerName.hs(color = leah))
+                        },
+                    )
+                }
                 // Date
                 CellSecondary(
                     middle = {
@@ -220,11 +266,22 @@ fun SwapInfoScreen(recordId: Int, navController: NavController) {
 
             SwapStatusSteps(
                 status = uiState.status,
-                isSingleChain = uiState.isSingleChain,
+                isSingleTransactionSwap = uiState.isSingleTransactionSwap,
                 depositingTxUrl = uiState.depositingTxUrl,
                 swappingTxUrl = uiState.swappingTxUrl,
                 sendingTxUrl = uiState.sendingTxUrl,
             )
+
+            if (uiState.status == SwapStatus.ActionRequired) {
+                VSpacer(16.dp)
+                AlertCard(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    format = AlertFormat.Structured,
+                    type = AlertType.Critical,
+                    titleCustom = stringResource(R.string.SwapInfo_SwapStoppedByProvider),
+                    text = stringResource(R.string.SwapInfo_SwapStoppedByProviderDescription),
+                )
+            }
 
             VSpacer(32.dp)
         }
@@ -232,7 +289,7 @@ fun SwapInfoScreen(recordId: Int, navController: NavController) {
 }
 
 @Composable
-private fun SwapStatusSteps(status: SwapStatus, isSingleChain: Boolean, depositingTxUrl: String?, swappingTxUrl: String?, sendingTxUrl: String?) {
+private fun SwapStatusSteps(status: SwapStatus, isSingleTransactionSwap: Boolean, depositingTxUrl: String?, swappingTxUrl: String?, sendingTxUrl: String?) {
     val context = LocalContext.current
     val normalSteps = listOf(
         stringResource(R.string.SwapInfo_StatusDepositing),
@@ -244,10 +301,10 @@ private fun SwapStatusSteps(status: SwapStatus, isSingleChain: Boolean, depositi
         stringResource(R.string.SwapInfo_StatusSwapping),
         stringResource(R.string.SwapInfo_StatusRefunded),
     )
-    val singleChainNormalSteps = listOf(
+    val singleTransactionNormalSteps = listOf(
         stringResource(R.string.SwapInfo_StatusSwapping),
     )
-    val singleChainFailedSteps = listOf(
+    val singleTransactionFailedSteps = listOf(
         stringResource(R.string.SwapInfo_StatusSwapping),
         stringResource(R.string.SwapInfo_StatusFailed),
     )
@@ -257,22 +314,23 @@ private fun SwapStatusSteps(status: SwapStatus, isSingleChain: Boolean, depositi
     val activeIndex: Int
     val failedIndex: Int?
 
-    if (isSingleChain) {
+    if (isSingleTransactionSwap) {
         when (status) {
             SwapStatus.Completed -> {
-                steps = singleChainNormalSteps
+                steps = singleTransactionNormalSteps
                 activeIndex = steps.size
                 failedIndex = null
             }
 
-            SwapStatus.Failed -> {
-                steps = singleChainFailedSteps
+            SwapStatus.Failed,
+            SwapStatus.ActionRequired -> {
+                steps = singleTransactionFailedSteps
                 activeIndex = -1
-                failedIndex = 0
+                failedIndex = 1
             }
 
             else -> {
-                steps = singleChainNormalSteps
+                steps = singleTransactionNormalSteps
                 activeIndex = 0
                 failedIndex = null
             }
@@ -285,10 +343,11 @@ private fun SwapStatusSteps(status: SwapStatus, isSingleChain: Boolean, depositi
                 failedIndex = null
             }
 
-            SwapStatus.Failed -> {
-                steps = normalSteps
-                activeIndex = -1
-                failedIndex = 0
+            SwapStatus.Failed,
+            SwapStatus.ActionRequired -> {
+                steps = normalSteps.take(2)
+                activeIndex = 1
+                failedIndex = 1
             }
 
             SwapStatus.Depositing -> {
@@ -323,7 +382,6 @@ private fun SwapStatusSteps(status: SwapStatus, isSingleChain: Boolean, depositi
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .border(1.dp, ComposeAppTheme.colors.blade, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
             .background(ComposeAppTheme.colors.lawrence)
             .padding(vertical = 8.dp)
@@ -331,7 +389,7 @@ private fun SwapStatusSteps(status: SwapStatus, isSingleChain: Boolean, depositi
         steps.forEachIndexed { index, label ->
             val isFailed = failedIndex == index
             val isDone = activeIndex > index
-            val isActive = activeIndex == index
+            val isActive = activeIndex == index && !isFailed
             val isFirst = index == 0
             val isLast = index == steps.lastIndex
             val stepUrl: String? = when (index) {
@@ -341,7 +399,9 @@ private fun SwapStatusSteps(status: SwapStatus, isSingleChain: Boolean, depositi
                 else -> null
             }
             val showView = stepUrl != null && (isDone || isActive || isFailed)
-            val connectorColor = if (isDone) green else blade
+            val isPrevDone = index > 0 && activeIndex >= index
+            val topConnectorColor = if (isPrevDone) green else blade
+            val bottomConnectorColor = if (isDone) green else blade
 
             Row(
                 modifier = Modifier
@@ -368,14 +428,14 @@ private fun SwapStatusSteps(status: SwapStatus, isSingleChain: Boolean, depositi
                         modifier = Modifier
                             .width(2.dp)
                             .weight(1f)
-                            .background(if (isFirst) Color.Transparent else connectorColor)
+                            .background(if (isFirst) Color.Transparent else topConnectorColor)
                     )
                     StepIndicator(isActive = isActive, isDone = isDone, isFailed = isFailed)
                     Box(
                         modifier = Modifier
                             .width(2.dp)
                             .weight(1f)
-                            .background(if (isLast) Color.Transparent else connectorColor)
+                            .background(if (isLast) Color.Transparent else bottomConnectorColor)
                     )
                 }
 

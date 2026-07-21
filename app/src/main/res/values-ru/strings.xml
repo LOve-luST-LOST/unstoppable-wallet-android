@@ -28,7 +28,7 @@
     <string name="Button_Disconnect">Отсоединить</string>
     <string name="Button_Create">Создать</string>
     <string name="Button_Advanced">Доп. настройки</string>
-    <string name="Button_Restore">Импорт</string>
+    <string name="Button_Restore">Восстановить</string>
     <string name="Button_Reset">Сбросить</string>
     <string name="Button_Understand">Я понимаю</string>
     <string name="Button_Switch">Перекл.</string>
@@ -67,7 +67,7 @@
 \n\nПОЖАЛУЙСТА НАЖМИТЕ, ЧТОБЫ ПОЛУЧИТЬ БОЛЬШЕ ИНФОРМАЦИИ</string>
     <string name="AccountRecovery_MigrationRequired">Это нестандартный кошелек.\n\nНАЖМИТЕ, ЧТОБЫ ПОЛУЧИТЬ БОЛЬШЕ ИНФОРМАЦИИ</string>
     <!--Intro-->
-    <string name="Intro_Wallet_Screen2Title">Полный контроль над активами</string>
+    <string name="Intro_Wallet_Screen2Title">Полный контроль</string>
     <string name="Intro_Wallet_Screen2Description">Контроль только у вас. Без ограничений со стороны третьих лиц.</string>
     <string name="Intro_Wallet_Screen3Title">Без границ</string>
     <string name="Intro_Wallet_Screen3Description">Свободный доступ к глобальным рынкам.</string>
@@ -329,7 +329,7 @@
     <string name="Balance_Sort_PopupTitle">Сортировка</string>
     <string name="Balance_Sort_Az">по названию</string>
     <string name="Balance_Sort_24hPriceChange">по изменению цены(%)</string>
-    <string name="Balance_NoCoinsAlert">Вы еще не добавили токены в этот кошелек.</string>
+    <string name="Balance_NoCoinsAlert">Здесь нет токенов. Добавьте один, чтобы начать.</string>
     <string name="Balance_NoAssetsToSend">У вас нет активов для отправки.</string>
     <string name="Balance_Network">Сеть</string>
     <string name="Balance_Format">Формат</string>
@@ -359,11 +359,8 @@
     <string name="Balance_Zcash_UnshieldedBalanceDetected_Info_Title">Обнаружен Transparent ZEC</string>
     <string name="Balance_Zcash_UnshieldedBalance_Info_Title">Transparent сумма</string>
     <string name="Balance_Zcash_UnshieldedBalance_Info_Description">У вас есть ZEC, находящийся на transparent адресе. Чтобы использовать его в Unstoppable, необходимо выполнить shielding для полной приватности.</string>
-    <string name="Balance_Zcash_UnshieldedBalance_Shield">Щит</string>
-    <string name="Balance_Zcash_Unified">Единый</string>
-    <string name="Balance_Zcash_UnifiedDescription">Используйте для личных и частных переводов между кошельками.</string>
     <string name="Balance_Zcash_Transparent">Прозрачный</string>
-    <string name="Balance_Zcash_TransparentDescription">Используйте для получения от бирж или сервисов, которые не поддерживают унифицированные адреса.</string>
+    <string name="Balance_Zcash_TransparentDescription">Используется для получения средств от бирж или сервисов, которые не поддерживают защищённые адреса.</string>
     <!--Send NFT-->
     <string name="SendNft_Title">Отправить</string>
     <!--Send-->
@@ -588,15 +585,15 @@
     <string name="Swap_Price">Цена</string>
     <string name="Swap_AvailableBalance">Доступный баланс</string>
     <string name="Swap_PriceImpact">Отклонение от рын. цены</string>
-    <string name="Swap_ProviderRisk">Риск поставщика</string>
+    <string name="Swap_ProviderRisk">Риск маршрута</string>
     <string name="Swap_ProviderRisk_NoRisk">Без риска</string>
     <string name="Swap_ProviderRisk_Risky">Риски</string>
     <string name="Swap_ProviderRisk_Unknown">Неизвестен</string>
     <string name="Swap_ProviderRisk_AlertTitle">Высокий риск заморозки!</string>
     <string name="Swap_ProviderRisk_AlertBody">Провайдер для этого конкретного обмена (%s) предупредил, что этот обмен скорее всего будет отклонен или даже может заморожен. Вернитесь назад и выберите другого поставщика подкачки.</string>
     <string name="Swap_AmlRisk_Title">Обнаружен риск</string>
-    <string name="Swap_AmlRisk_Description">Для этой транзакции были выявлены потенциальные риски. Во время обработки ваши средства могут быть отклонены или ограничены. Пожалуйста, выберите другого провайдера.</string>
-    <string name="Swap_AmlRisk_Button">Выбрать другого провайдера</string>
+    <string name="Swap_AmlRisk_Description">Для данной транзакции выявлены потенциальные риски. Во время обработки ваши средства могут быть отклонены или ограничены. Пожалуйста, выберите другой маршрут.</string>
+    <string name="Swap_AmlRisk_Button">Выбрать другой маршрут</string>
     <string name="Swap_AmlUnknown_Title">Внимание!</string>
     <string name="Swap_AmlUnknown_Description">Мы не смогли проверить риск для этой транзакции. Если вы продолжите, это может повлечь за собой задержки, отклонение или ограничения во время обработки.</string>
     <string name="Swap_AmlUnknown_Button">Продолжить с рисками</string>
@@ -604,12 +601,12 @@
     <string name="Swap_AmlError_Description">Не удалось получить ответ прямо сейчас. Пожалуйста, попробуйте еще раз.</string>
     <string name="Swap_AmlError_Button">Повторить</string>
     <string name="Swap_EstimatedTime">Время</string>
-    <string name="Swap_EstimatedTimeDescription">Приблизительное время для получения средств. Обработка замены и подтверждения транзакций может занять некоторое время в зависимости от сети и провайдера.</string>
+    <string name="Swap_EstimatedTimeDescription">Приблизительное время получения средств. Обработка обмена и подтверждение транзакций могут занять некоторое время в зависимости от сети и маршрута.</string>
     <string name="Swap_MinimumReceived">Гарантированно</string>
     <string name="Swap_MinimumReceivedDescription">Эта сумма находится в процессе проверки. Как только состояние транзакции будет проверено, вы сможете использовать эти монеты. Минимальная сумма пользователя </string>
     <string name="Swap_Slippage">Отклонение от курса</string>
     <string name="Swap_Recipient">Получатель</string>
-    <string name="Swap_ErrorNoProviders">Нет провайдеров</string>
+    <string name="Swap_ErrorNoProviders">Нет маршрутов</string>
     <string name="Swap_ErrorNoQuote">Нет предложений</string>
     <string name="Swap_ErrorInsufficientBalance">Недостаточный баланс</string>
     <string name="Swap_ErrorTokenNotEnabled">Токен не включен</string>
@@ -625,7 +622,7 @@
     <string name="Swap_Approving">Разрешение</string>
     <string name="Swap_Swapping">Обмен</string>
     <string name="Swap_Quoting">Котировка</string>
-    <string name="Swap_Providers">Провайдеры</string>
+    <string name="Swap_Providers">Маршруты</string>
     <string name="Swap_AmountMin">(мин)</string>
     <string name="Swap_AmountMax">(макс)</string>
     <string name="Swap_YouPay">Вы платите</string>
@@ -647,12 +644,12 @@
     <string name="SwapConfirm_MevDescription">Включите защиту, чтобы защитить подкачку и избежать потери значения для ботов.</string>
     <string name="SwapError_FailedToFetchQuote">Не удалось получить данные.</string>
     <string name="SwapTerms_Title">Условия обмена</string>
-    <string name="SwapTerms_TopText">Unstoppable агрегирует несколько децентрализованных (DEX) и централизованных swap-провайдеров, чтобы предлагать конкурентные курсы и широкий выбор поддерживаемых активов.</string>
-    <string name="SwapTerms_BottomText">Всегда выбирайте поставщика подкачки, который соответствует вашим требованиям.</string>
+    <string name="SwapTerms_TopText">Чтобы продолжить, подтвердите ваше согласие с каждым пунктом.</string>
+    <string name="SwapTerms_BottomText">Всегда выбирайте маршрут обмена, соответствующий вашим требованиям.</string>
     <string name="SwapTerms_RiskRestrictions">Риск ограничений</string>
-    <string name="SwapTerms_RiskRestrictions_Info">Я понимаю, что некоторые провайдеры не-DEX используют прокси-транзакции (AML). Такие провайдеры могут отказаться от обменов (рефератов) или, в редких случаях, (CSAM и терроризм), замораживать средства и запрашивать данные KYC.</string>
+    <string name="SwapTerms_RiskRestrictions_Info">Некоторые маршруты могут отклонить обмены или ограничить доступ к средствам. Обратите внимание на оценки маршрута при выборе маршрута.</string>
     <string name="SwapTerms_UserResponsibility">Ответственность пользователя</string>
-    <string name="SwapTerms_UserResponsibility_Info">Я понимаю, что использование не DEX провайдеров влечет за собой дополнительные риски и что эти риски являются моей ответственностью. Неспособность не может гарантировать поведение провайдера.</string>
+    <string name="SwapTerms_UserResponsibility_Info">Я ознакомился с возможными рисками и принимаю ответственность за выбор маршрута.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_SlippageTitle">Допустимое отклонение</string>
     <string name="SwapSettings_RecipientAddressTitle">Адрес получателя</string>
@@ -665,12 +662,8 @@
     <string name="SwapSettings_Warning_UnusualSlippage">Ваша транзакция может быть авансированной</string>
     <string name="SwapSort_BestRate">Лучший курс</string>
     <string name="SwapSort_BestTime">Самый быстрый</string>
-    <string name="RiskLevel_ProviderRiskLevel">Уровни риска провайдера</string>
-    <string name="RiskLevel_ProviderRiskLevel_Description">Нижеприведенные метки объясняют различные уровни риска поставщиков подкачки. Выберите соответственно.</string>
-    <string name="RiskLevel_Auto_Description">Автоматическое выполнение по цепочке. Средства не могут быть заморожены или заблокированы после отправки. В случае неудачи средства возвращаются автоматически.</string>
-    <string name="RiskLevel_Limited_Description">Провайдер работает с собственной ликвидностью. Отклонения редки. Замораживание теоретически возможно, но весьма маловероятно.</string>
-    <string name="RiskLevel_Controlled_Description">Эти провайдеры работают с ликвидностью третьих лиц и имеют политику AML. В большинстве случаев переводы отвергаются и возвращаются в случае обнаружения проблем с AML. В некоторых случаях провайдер может запросить KYC перед получением средств.</string>
-    <string name="RiskLevel_Precheck_Description">Провайдер делает свой собственный адресный просеиватель перед обработкой. Отклоненные файлы теоретически возможны, но весьма маловероятны.</string>
+    <string name="RiskLevel_ProviderRiskLevel">Оценка маршрута</string>
+    <string name="RiskLevel_ProviderRiskLevel_Description">Эти уровни показывают, как маршруты обрабатывают обмены и проверки транзакций.</string>
     <!-- Swap Confirmation -->
     <string name="ActivationRequired_DialogTitle">Активировать токен</string>
     <string name="ActivationRequired_DialogDescription">Чтобы получить %s, вам нужно активировать токен. Для каждого токена Stellar сети требуется установить линию доверия. Без него ваш кошелек не может получить %s — транзакция будет отклонена, а средства не будут доставлены.</string>
@@ -682,10 +675,10 @@
     <string name="Activate_InsufficientBalance_Description">У вас недостаточно средств XLM для активации этого токена.</string>
     <!-- Swap History -->
     <string name="SwapHistory_Title">История обмена</string>
-    <string name="SwapHistory_EmptyList">Ещё нет заходов</string>
+    <string name="SwapHistory_EmptyList">У вас еще нет ожидающих или прошлых свопов.</string>
     <string name="SwapInfo_Title">Детали обмена</string>
     <!-- Swap Info -->
-    <string name="SwapInfo_Provider">Провайдер</string>
+    <string name="SwapInfo_Provider">Маршрут</string>
     <string name="SwapInfo_SourceAddress">Адрес источника</string>
     <string name="SwapInfo_StatusTitle">Статус транзакции</string>
     <string name="SwapInfo_StatusDepositing">Депозит</string>
@@ -725,8 +718,6 @@
     <string name="Transactions_Swap">Обмен выполнен</string>
     <string name="Transactions_Failed">Неудачный</string>
     <string name="Transactions_Transfer">Перевод</string>
-    <string name="Transactions_Shield">Щит</string>
-    <string name="Transactions_Unshield">Не щит</string>
     <string name="Transactions_ContractCall">Вызов контракта</string>
     <string name="Transactions_ExternalContractCall">Внешний вызов</string>
     <string name="Transactions_ContractCreation">Создание контракта</string>
@@ -986,15 +977,15 @@
     <!-- Backup Manager -->
     <string name="BackupManager_Title">Резерв.копирование</string>
     <string name="BackupManager_RestoreBackup">Восстановить резерв. копию</string>
-    <string name="BackupManager_CreateBackup">Создать новую резерв. копию</string>
+    <string name="BackupManager_CreateBackup">Создать резервную копию</string>
     <string name="BackupManager_BаckupFile">Файл резервной копии</string>
-    <string name="BackupManager_Wallets">КОШЕЛЬКИ</string>
-    <string name="BackupManager_Other">ДРУГИЕ</string>
+    <string name="BackupManager_Wallets">Кошельки</string>
+    <string name="BackupManager_Other">Данные</string>
     <string name="BackupManager_Restore">Восстановить</string>
     <string name="BackupManager_BackupFileContents">Список содержимого в файле резервной копии.</string>
-    <string name="BackupManager_MergeTitle">Внимание</string>
+    <string name="BackupManager_MergeTitle">Внимание!</string>
     <string name="BackupManager_MergeButton">Заменить</string>
-    <string name="BackupManager_MergeDescription">Это действие перезапишет ваши локальные контакты.</string>
+    <string name="BackupManager_MergeDescription">Сохраненные контакты будут заменены данными из резервной копии.</string>
     <string name="BackupManager_BackupRequired">Необходима резерв. копия</string>
     <string name="BackupManager_WatchWallets">Просмотр кошелька</string>
     <string name="BackupManager_Watchlist">Избранное</string>
@@ -1178,6 +1169,110 @@
     <string name="ManageAccount_Wallets">Кошельки</string>
     <string name="ManageAccount_WatchAddresses">Просмотр кошелька</string>
     <string name="ManageAccount_DeleteWarning">Вы хотите приостановить просмотр этого адреса кошелька?</string>
+
+    <string-array name="wallet_names">
+        <item>😰 Потный Сейф</item>
+        <item>🧂 Солёная Бухгалтерия</item>
+        <item>💧 Определённо Ликвидный</item>
+        <item>⏳ Ожидающая Транзакция</item>
+        <item>🌈 Воображаемые Доходы</item>
+        <item>🤡 Шатающийся Курс</item>
+        <item>😤 Максимальный Cope</item>
+        <item>☠️ Официально Рект</item>
+        <item>👑 Неплатёжеспособная Корона</item>
+        <item>📉 Посредственные Доходы</item>
+        <item>🕸️ Пыльный Портфель</item>
+        <item>🧳 Винтажный Мешок</item>
+        <item>👻 Призрачная Прибыль</item>
+        <item>🐂 Иллюзорный Бык</item>
+        <item>🛒 Серийный Диппер</item>
+        <item>💼 Премиум Багхолдер</item>
+        <item>🤨 Подозрительная Доходность</item>
+        <item>♾️ Вечный Дип</item>
+        <item>💭 Заимствованная Убеждённость</item>
+        <item>🦍 Квантовая Обезьяна</item>
+        <item>🔍 Параноидальный Нод</item>
+        <item>🛋️ Ленивый Стейкер</item>
+        <item>☕ Кофеиновый Валидатор</item>
+        <item>🔮 Нищий Оракул</item>
+        <item>😴 Сонный Валидатор</item>
+        <item>🎲 Случайный Гений</item>
+        <item>🔐 Нехотящий Ходлер</item>
+        <item>🤑 Жадный Оракул</item>
+        <item>😵 Запутанный Арбитраж</item>
+        <item>🏃 Паникующая Биржа</item>
+        <item>🪢 Порванный Фундамент</item>
+        <item>🌉 Подозрительный Мост</item>
+        <item>⛽ Неприличные Комиссии</item>
+        <item>🌶️ Острый Залог</item>
+        <item>🚌 Переполненный Мемпул</item>
+        <item>💨 Дымный Генезис</item>
+        <item>🕯️ Проклятый Портфель</item>
+        <item>⌛ Бесконечное Терпение</item>
+        <item>🥶 Замороженный Cope</item>
+        <item>💊 Синтетическая Смелость</item>
+        <item>🎖️ Благородный Крестьянин</item>
+        <item>⚡ Временный Миллионер</item>
+        <item>🗺️ Стратегическая Бедность</item>
+        <item>😊 Радостный Рект</item>
+        <item>🏰 Безрассудная Цитадель</item>
+        <item>🎰 Дегенеративный Рай</item>
+        <item>🙏 Смиренные Руины</item>
+        <item>💎 Бриллиантовые Руки</item>
+        <item>🃏 Бумажные Руки</item>
+        <item>🌙 Лунный Самообман</item>
+        <item>🚿 Отмытый Трейдер</item>
+        <item>🤏 Крошечная Аллокация</item>
+        <item>🎯 Случайная Удача</item>
+        <item>🌊 Подводная Позиция</item>
+        <item>💤 Спящий Гигант</item>
+        <item>🎪 Бродячий Цирк</item>
+        <item>🧸 Эмоциональное Хеджирование</item>
+        <item>🐯 Бумажный Тигр</item>
+        <item>🔁 Рекурсивная Прибыль</item>
+        <item>🥴 Головокружительная Доходность</item>
+        <item>🏚️ Заложенная Ферма</item>
+        <item>🤫 Молчаливый Кит</item>
+        <item>🌅 Ложный Рассвет</item>
+        <item>📊 Случайное Блуждание</item>
+        <item>🌋 Волатильная Гора</item>
+        <item>🎁 Ликвидация-Сюрприз</item>
+        <item>🏄 Рискованная Поездка</item>
+        <item>🧲 Магнитный Убыток</item>
+        <item>🏋️ Тяжёлый Мешок</item>
+        <item>🎈 Раздутая Доходность</item>
+        <item>🧪 Экспериментальный Фонд</item>
+        <item>🌸 Хрупкая Позиция</item>
+        <item>🧋 Пузырьковый Токен</item>
+        <item>🏆 Приз за Участие</item>
+        <item>🌝 Полнолунный Фонд</item>
+        <item>🐸 Редкий Пепе</item>
+        <item>🧟 Зомби-Токен</item>
+        <item>🦄 Мифическая Прибыль</item>
+        <item>🥊 Призрачный Шанс</item>
+        <item>🌟 Блаженное Невежество</item>
+        <item>🦆 Резиновая Утка</item>
+        <item>🎋 Бамбуковый Протокол</item>
+        <item>🏴‍☠️ Пиратская Казна</item>
+        <item>🪄 Магическая Ликвидность</item>
+        <item>🏊 Подводный Сейф</item>
+        <item>🎊 Счастливая Ликвидация</item>
+        <item>🦋 Эффект Бабочки</item>
+        <item>🎸 Отключённый Сейф</item>
+        <item>💥 Взрывная Доходность</item>
+        <item>🧠 Гладкий Мозг</item>
+        <item>🪦 Мёртвый Пул</item>
+        <item>🎡 Круговая Экономика</item>
+        <item>🧘 Дзен Ликвидация</item>
+        <item>📌 Пропущенное Дно</item>
+        <item>🏴 Тёмный Лес</item>
+        <item>😎 Уверенный Неудачник</item>
+        <item>🌪️ Хаотичная Доходность</item>
+        <item>🧬 Мутантный Протокол</item>
+        <item>🍕 Голодный Кошелёк</item>
+        <item>🎭 Одолженная Луна</item>
+    </string-array>
+
     <string name="Balance_Receive_BackupRequired_Description">Вам нужно сделать резервную копию %1$s</string>
     <!--Network Settings-->
     <!-- Show Key -->
@@ -1605,4 +1700,108 @@
     <string name="Hud_Text_Connected">Подключено</string>
     <string name="BirthdayDatePicker_Title">Выберите дату</string>
     <string name="BirthdayDatePicker_Description">Выберите приблизительную дату создания кошелька. \nВысота блока будет рассчитана автоматически.</string>
+    <string name="BackupManager_RestoreBackupDescription">Восстановите вашу учетную запись и данные приложения из файла резервной копии.</string>
+    <string name="BackupManager_CreateBackupDescription">Создайте файл резервной копии ваших кошельков и данных приложения.</string>
+    <string name="BackupManager_SelectItemsDescription">Выберите, что включить в резервную копию. Вы можете создать резервную копию всех или только выбранных элементов.</string>
+    <string name="BackupManager_RestoreItemsDescription">Выберите, что восстановить. Вы можете восстановить все или только выбранные элементы.</string>
+    <string name="BackupManager_CountSavedAddresses">сохраненные адреса: %d</string>
+    <string name="BackupManager_CountAssets">активы: %d</string>
+    <string name="BackupManager_CountNetworks">сети: %d</string>
+    <string name="BackupManager_CountWallets">кошельки: %d</string>
+    <string name="AddZanoNode_AddNode">Добавить узел</string>
+    <string name="AddZanoNode_NodeUrl">URL узла</string>
+    <string name="ZanoNodeSettings_Description">Выберите узел, который приложение Unstoppable должно использовать для синхронизации кошелька(ов).</string>
+    <string name="LocalBackup_ProtectBackup">Защитить резервную копию</string>
+    <string name="LocalBackup_ProtectBackupDescription">Создайте пароль для защиты файла резервной копии.</string>
+    <string name="LocalBackup_BackupName">Имя резервной копии</string>
+    <string name="LocalBackup_AddPassword">Добавить пароль</string>
+    <string name="LocalBackup_ConfirmPassword">Подтвердить пароль</string>
+    <string name="AddZanoNode_Warning_UrlExists">Узел с этим URL уже существует</string>
+    <string name="AddZanoNode_Error_InvalidUrl">Введённый URL невалиден. Валидный URL должен иметь одну из следующих схем: http, https</string>
+    <string name="Balance_Zcash_ShieldedDescription">Используется для личных и конфиденциальных переводов между кошельками.</string>
+    <string name="RiskLevel_Excellent_Description">Прямое выполнение в блокчейне. Без проверок или блокировок маршрута. Автоматический возврат средств при ошибке обмена.</string>
+    <string name="RiskLevel_Good_Description">Маршрут автоматически проверяет транзакции перед завершением. При обнаружении проблем обмен отклоняется и средства возвращаются.</string>
+    <string name="RiskLevel_Fair_Description">Для некоторых транзакций может потребоваться дополнительная проверка. При обнаружении проблем средства обычно возвращаются автоматически.</string>
+    <string name="SwapInfo_RequestRefund">Запросить возврат</string>
+    <string name="SwapInfo_RequestRefundDescription">Провайдеру нужны подробности вашего обмена для обработки возврата. Они будут включены при обращении к провайдеру.</string>
+    <string name="SwapInfo_SwapId">ID обмена</string>
+    <string name="SwapInfo_Amount">Сумма</string>
+    <string name="SwapInfo_RefundAddress">Адрес возврата</string>
+    <string name="SwapInfo_CopyDetails">Копировать детали</string>
+    <string name="SwapInfo_SwapStoppedByProvider">Обмен остановлен провайдером</string>
+    <string name="SwapInfo_SwapStoppedByProviderDescription">Ваш депозит получен, но провайдер не смог завершить обмен. Запросите возврат ниже, чтобы вернуть свои средства.</string>
+    <string name="BackupRequired_Title">Создайте резервную копию кошелька</string>
+    <string name="BackupRequired_Description">Без резервной копии потеря телефона означает постоянную потерю средств. Восстановить их невозможно.</string>
+    <string name="BackupRequired_ManualBackupDescription">Запишите вашу фразу восстановления</string>
+    <string name="BackupRequired_LocalBackupDescription">Сохраните зашифрованный файл на устройство</string>
+    <string name="BackupRequired_RemindLater">Напомнить позже</string>
+    <string name="OpenCryptoPay_Title">Платеж</string>
+    <string name="OpenCryptoPay_Expired">Истекший</string>
+    <string name="OpenCryptoPay_Merchant">Продавец</string>
+    <string name="OpenCryptoPay_Amount">Сумма</string>
+    <string name="OpenCryptoPay_ChooseAsset">Выбрать актив</string>
+    <string name="OpenCryptoPay_ChooseTokenDescription">Выберите токен, который вы хотите использовать для оплаты</string>
+    <string name="OpenCryptoPay_NoSupportedMethods">Нет доступных поддерживаемых методов платежа для этого кошелька</string>
+    <string name="OpenCryptoPay_URL">URL</string>
+    <string name="OpenCryptoPay_ExpiresIn">Истекает через</string>
+    <string name="OpenCryptoPay_PaymentId">ID платежа</string>
+    <string name="OpenCryptoPay_QuoteId">ID котировки</string>
+    <string name="OpenCryptoPay_ProofStatus">Статус подтверждения</string>
+    <string name="OpenCryptoPay_ProofStatus_Submitted">Отправлено</string>
+    <string name="OpenCryptoPay_ProofStatus_Pending">Ожидание</string>
+    <string name="OpenCryptoPay_ProofStatus_Reconciliation">Требуется сверка</string>
+    <string name="OpenCryptoPay_RetryNow">Повторить попытку</string>
+    <string name="OpenCryptoPay_Error_NoActivePayment">На этом терминале нет активного платежа</string>
+    <string name="OpenCryptoPay_Error_FetchFailed">Не удалось получить данные платежа</string>
+    <string name="OpenCryptoPay_Error_LoadFailed">Не удалось загрузить данные платежа</string>
+    <string name="OpenCryptoPay_Error_SubmitFailed">Не удалось отправить платеж продавцу. Пожалуйста, попробуйте снова.</string>
+    <string name="Swap_SwapTime">Время свопа</string>
+    <string name="Swap_PopularTokens">Популярные токены</string>
+    <string name="Swap_YourTokens">Ваши токены</string>
+    <string name="Swap_TopTokens">Топ токены</string>
+    <string name="Swap_RecentSearch">Недавний поиск</string>
+    <string name="SwapTerms_RiskRestrictions_Highlight">оценки маршрута</string>
+    <string name="ZcashEndpointSettings_Description">Выберите сервер lightwallet, который приложение Unstoppable должно использовать для синхронизации кошелька(ков) Zcash.</string>
+    <string name="AddZcashEndpoint_AddEndpoint">Добавить конечную точку</string>
+    <string name="AddZcashEndpoint_EndpointUrl">URL конечной точки</string>
+    <string name="AddZcashEndpoint_Warning_UrlExists">Конечная точка с этим URL уже существует</string>
+    <string name="AddZcashEndpoint_Error_InvalidUrl">Введенный URL недействителен. Допустимый URL должен использовать схему https</string>
+    <string name="Restore_BlockchainsDescription">Выберите блокчейны, которые вы хотите восстановить.</string>
+    <string name="ManageAccounts_ViewOnlyWallet">Кошелек только для просмотра</string>
+    <string name="Button_UnderstandAndContinue">Я понимаю и продолжаю</string>
+    <string name="CreateNewWallet_Passkey">Passkey</string>
+    <string name="CreateNewWallet_PasskeyTerms">Условия Passkey-кошелька</string>
+    <string name="CreateNewWallet_Standard">Стандартный</string>
+    <string name="CreateNewWallet_Standard_Description">Кошелёк с фразой восстановления, требующей ручного резервного копирования.</string>
+    <string name="CreateWallet_AddPassphrase">Добавить пароль-фразу</string>
+    <string name="CreateWallet_AdvancedOptions">Расширенные настройки</string>
+    <string name="CreateWallet_PassphraseOptional">Кодовая фраза (необязательно)</string>
+    <string name="CreateWallet_PassphraseShortDescription">Добавляет дополнительную защиту вашему кошельку. Требуется вместе с фразой восстановления для восстановления доступа.</string>
+    <string name="ImportWallet_Button_Understood">Понятно</string>
+    <string name="ImportWallet_Passkey">Через Passkey</string>
+    <string name="ImportWallet_PrivateKey">из Приватного Ключа</string>
+    <string name="ImportWallet_PrivateKey_Description">Импортировать кошелёк с помощью приватного ключа.</string>
+    <string name="ManageAccount_WalletName">Имя кошелька</string>
+    <string name="ManageAccounts_AddWallet">Добавить кошелёк</string>
+    <string name="ManageAccounts_CreateNewWalletDescription">Создайте новый кошелёк, чтобы начать, или добавьте ещё один.</string>
+    <string name="ManageAccounts_ExistingWallet">Существующий кошелёк</string>
+    <string name="ManageAccounts_ExistingWalletDescription">Импортируйте кошелёк, если он у вас уже есть, чтобы продолжить его использование.</string>
+    <string name="ManageAccounts_NoActiveWallets">Нет активных кошельков</string>
+    <string name="ManageAccounts_ViewOnlyWalletDescription">Просмотр кошелька по адресу без доступа к средствам.</string>
+    <string name="PasskeyTerms_LimitedAccess">Ограниченный кросс-платформенный доступ</string>
+    <string name="PasskeyTerms_Responsibility">Ответственность</string>
+    <string name="Passphrase_Placeholder">Кодовая фраза (необязательно)</string>
+    <string name="SettingsLaunchScreen_Auto">По умолчанию</string>
+    <string name="CreateNewWallet_Button_CreateStandardWallet">Создать стандартный кошелёк</string>
+    <string name="CreateNewWallet_CreatePasskeyNotSupported_Description">Это устройство не поддерживает кошельки с Passkey. Вместо этого вы можете создать стандартный кошелёк.</string>
+    <string name="CreateNewWallet_CreatePasskeyNotSupported_Title">Не удалось создать Passkey</string>
+    <string name="CreateNewWallet_Passkey_Description">Кошелёк с фразой восстановления, надёжно сохранённой вашим устройством.</string>
+    <string name="ImportWallet_Passkey_Description">Восстановите кошелёк с помощью вашего устройства.</string>
+    <string name="ImportWallet_RestorePasskeyNotSupported_Description">Это устройство не поддерживает восстановление через Passkey. Используйте другой способ восстановления.</string>
+    <string name="ImportWallet_RestorePasskeyNotSupported_Title">Восстановление через Passkey не поддерживается</string>
+    <string name="PasskeyTerms_DeviceDependency">Зависимость от устройства</string>
+    <string name="PasskeyTerms_DeviceDependency_Description">Для доступа требуется ваше устройство. Потеря доступа может привести к потере средств.</string>
+    <string name="PasskeyTerms_LimitedAccess_Description">Может работать не на всех устройствах или платформах.</string>
+    <string name="PasskeyTerms_Responsibility_Description">Вы несёте ответственность за доступ к вашему устройству. Unstoppable не сможет восстановить этот кошелёк, если доступ будет утерян.</string>
+    <string name="Send_Error_NodeUnreachable">Не удалось подключиться к узлу. Проверьте подключение и попробуйте снова.</string>
 </resources>

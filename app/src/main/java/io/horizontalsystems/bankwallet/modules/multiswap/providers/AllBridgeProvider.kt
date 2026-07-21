@@ -1,6 +1,5 @@
 package io.horizontalsystems.bankwallet.modules.multiswap.providers
 
-import io.horizontalsystems.bankwallet.R
 import io.horizontalsystems.bankwallet.core.App
 import io.horizontalsystems.bankwallet.core.blockTime
 import io.horizontalsystems.bankwallet.core.hexToByteArray
@@ -30,11 +29,9 @@ import java.math.BigInteger
 object AllBridgeProvider : IMultiSwapProvider {
     override val id = "allbridge"
     override val title = "AllBridge"
-    override val icon = R.drawable.swap_provider_allbridge
     override val type = SwapProviderType.DEX
-    override val aml = true
     override val requireTerms = false
-    override val riskLevel = RiskLevel.AUTO
+    override val riskLevel = RiskLevel.EXCELLENT
     private val feePaymentMethod = FeePaymentMethod.StableCoin
 
     private val proxies = mapOf(
@@ -151,8 +148,11 @@ object AllBridgeProvider : IMultiSwapProvider {
         return tokensMap
     }
 
-    override fun isSingleChainSwap(tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String) =
+    override fun isSingleTransactionSwap(tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String) =
         tokenInBlockchainTypeUid == tokenOutBlockchainTypeUid
+
+    override fun mevProtectionAllowed(tokenIn: Token, tokenOut: Token): Boolean =
+        tokenIn.blockchainType == tokenOut.blockchainType && tokenIn.blockchainType.isEvm
 
     override fun supports(blockchainType: BlockchainType): Boolean {
         // overriding fun supports(tokenFrom: Token, tokenTo: Token) makes this method redundant

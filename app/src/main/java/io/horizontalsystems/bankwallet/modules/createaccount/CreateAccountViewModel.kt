@@ -10,7 +10,6 @@ import io.horizontalsystems.bankwallet.core.IAccountManager
 import io.horizontalsystems.bankwallet.core.managers.PassphraseValidator
 import io.horizontalsystems.bankwallet.core.managers.WalletActivator
 import io.horizontalsystems.bankwallet.core.managers.WordsManager
-import io.horizontalsystems.bankwallet.core.providers.PredefinedBlockchainSettingsProvider
 import io.horizontalsystems.bankwallet.core.providers.Translator
 import io.horizontalsystems.bankwallet.entities.Account
 import io.horizontalsystems.bankwallet.entities.AccountOrigin
@@ -28,7 +27,6 @@ class CreateAccountViewModel(
     private val accountManager: IAccountManager,
     private val walletActivator: WalletActivator,
     private val passphraseValidator: PassphraseValidator,
-    private val predefinedBlockchainSettingsProvider: PredefinedBlockchainSettingsProvider,
 ) : ViewModel() {
 
     private var passphrase = ""
@@ -37,8 +35,7 @@ class CreateAccountViewModel(
     val mnemonicKinds = CreateAccountModule.Kind.values().toList()
 
     val defaultAccountName = accountFactory.getNextAccountName()
-    var accountName: String = defaultAccountName
-        get() = field.ifBlank { defaultAccountName }
+    var accountName by mutableStateOf(accountManager.getRandomWalletName())
         private set
 
     var selectedKind: CreateAccountModule.Kind = Mnemonic12
@@ -63,7 +60,7 @@ class CreateAccountViewModel(
 
         val accountType = mnemonicAccountType(selectedKind.wordsCount)
         val account = accountFactory.account(
-            accountName,
+            accountName.ifBlank { defaultAccountName },
             accountType,
             AccountOrigin.Created,
             false,
@@ -72,13 +69,15 @@ class CreateAccountViewModel(
 
         accountManager.save(account)
         activateDefaultWallets(account)
-        predefinedBlockchainSettingsProvider.prepareNew(account, BlockchainType.Zcash)
-        predefinedBlockchainSettingsProvider.prepareNew(account, BlockchainType.Monero)
         success = accountType
     }
 
     fun onChangeAccountName(name: String) {
         accountName = name
+    }
+
+    fun generateRandomAccountName() {
+        accountName = accountManager.getRandomWalletName()
     }
 
     fun onChangePassphrase(v: String) {
@@ -103,11 +102,14 @@ class CreateAccountViewModel(
         selectedKind = kind
     }
 
-    fun setPassphraseEnabledState(enabled: Boolean) {
+    fun setAdvancedOptionsEnabled(enabled: Boolean) {
         passphraseEnabled = enabled
         if (!enabled) {
+            selectedKind = Mnemonic12
             passphrase = ""
             passphraseConfirmation = ""
+            passphraseState = null
+            passphraseConfirmState = null
         }
     }
 
@@ -119,16 +121,7 @@ class CreateAccountViewModel(
         if (passphraseState is DataState.Error) {
             return true
         }
-
-        if (passphrase.isBlank()) {
-            passphraseState = DataState.Error(
-                Exception(
-                    Translator.getString(R.string.CreateWallet_Error_EmptyPassphrase)
-                )
-            )
-            return true
-        }
-        if (passphrase != passphraseConfirmation) {
+        if (passphrase.isNotBlank() && passphrase != passphraseConfirmation) {
             passphraseConfirmState = DataState.Error(
                 Exception(
                     Translator.getString(R.string.CreateWallet_Error_InvalidConfirmation)
@@ -143,11 +136,6 @@ class CreateAccountViewModel(
         val tokenQueries = listOfNotNull(
             TokenQuery(BlockchainType.Bitcoin, TokenType.Derived(TokenType.Derivation.Bip84)),
             TokenQuery(BlockchainType.Ethereum, TokenType.Native),
-            TokenQuery(BlockchainType.Monero, TokenType.Native),
-            TokenQuery(BlockchainType.Tron, TokenType.Native),
-            TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native),
-            TokenQuery(BlockchainType.Tron, TokenType.Eip20("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")),//USDT(TRC20)
-            TokenQuery(BlockchainType.Ethereum, TokenType.Eip20("0xdac17f958d2ee523a2206206994597c13d831ec7")),//USDT(erc20)
         )
         walletActivator.activateWallets(account, tokenQueries)
     }

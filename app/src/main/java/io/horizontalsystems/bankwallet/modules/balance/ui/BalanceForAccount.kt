@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.horizontalsystems.bankwallet.R
-import io.horizontalsystems.bankwallet.core.providers.Translator
 import io.horizontalsystems.bankwallet.core.slideFromBottom
 import io.horizontalsystems.bankwallet.core.slideFromRight
 import io.horizontalsystems.bankwallet.core.stats.StatEvent
@@ -36,16 +35,15 @@ import io.horizontalsystems.bankwallet.modules.balance.AccountViewItem
 import io.horizontalsystems.bankwallet.modules.balance.BalanceModule
 import io.horizontalsystems.bankwallet.modules.balance.BalanceViewModel
 import io.horizontalsystems.bankwallet.modules.manageaccount.dialogs.BackupRequiredAlert
-import io.horizontalsystems.bankwallet.modules.manageaccount.dialogs.BackupRequiredDialog
 import io.horizontalsystems.bankwallet.modules.manageaccounts.ManageAccountsModule
 import io.horizontalsystems.bankwallet.modules.qrscanner.QRScannerActivity
 import io.horizontalsystems.bankwallet.modules.walletconnect.WCAccountTypeNotSupportedDialog
 import io.horizontalsystems.bankwallet.modules.walletconnect.WCManager
 import io.horizontalsystems.bankwallet.modules.walletconnect.list.WalletConnectListViewModel
+import io.horizontalsystems.bankwallet.modules.opencryptopay.OpenCryptoPayFragment
 import io.horizontalsystems.bankwallet.modules.walletconnect.list.ui.WCInvalidUrlBottomSheet
 import io.horizontalsystems.bankwallet.ui.compose.TranslatableString
 import io.horizontalsystems.bankwallet.ui.compose.components.MenuItem
-import io.horizontalsystems.bankwallet.ui.compose.components.MenuItemLoading
 import io.horizontalsystems.bankwallet.uiv3.components.HSScaffold
 import io.horizontalsystems.core.helpers.HudHelper
 import kotlinx.coroutines.delay
@@ -106,20 +104,6 @@ fun BalanceForAccount(
                     navController.slideFromBottom(R.id.wcErrorNoAccountFragment)
                 }
 
-                is WCManager.SupportState.NotSupportedDueToNonBackedUpAccount -> {
-                    val text =
-                        Translator.getString(R.string.WalletConnect_Error_NeedBackup)
-                    navController.slideFromBottom(
-                        R.id.backupRequiredDialog,
-                        BackupRequiredDialog.Input(state.account, text)
-                    )
-
-                    stat(
-                        page = StatPage.Balance,
-                        event = StatEvent.Open(StatPage.BackupRequired)
-                    )
-                }
-
                 is WCManager.SupportState.NotSupported -> {
                     navController.slideFromBottom(
                         R.id.wcAccountTypeNotSupportedDialog,
@@ -131,16 +115,23 @@ fun BalanceForAccount(
         viewModel.onWalletConnectRequestHandled()
     }
 
-    BackupRequiredAlert(navController)
     val uiState = viewModel.uiState
+
+    LaunchedEffect(uiState.openOcpPayment) {
+        uiState.openOcpPayment?.let { lnurl ->
+            navController.slideFromRight(
+                R.id.openCryptoPayFragment,
+                OpenCryptoPayFragment.Input(lnurl)
+            )
+            viewModel.onOcpPaymentOpened()
+        }
+    }
+
+    BackupRequiredAlert(navController)
 
     HSScaffold(
         title = accountViewItem.name,
         menuItems = buildList {
-            if (uiState.loading) {
-                add(MenuItemLoading)
-            }
-
             if (!viewModel.uiState.balanceTabButtonsEnabled && !accountViewItem.isWatchAccount) {
                 add(
                     MenuItem(
@@ -152,6 +143,20 @@ fun BalanceForAccount(
                     )
                 )
             }
+            add(
+                MenuItem(
+                    title = TranslatableString.ResString(R.string.Transactions_Title),
+                    icon = R.drawable.ic_circle_clock_24,
+                    onClick = {
+                        navController.slideFromRight(R.id.transactionsFragment)
+
+                        stat(
+                            page = StatPage.Balance,
+                            event = StatEvent.Open(StatPage.Transactions)
+                        )
+                    }
+                )
+            )
             add(
                 MenuItem(
                     title = TranslatableString.ResString(R.string.ManageAccounts_Title),

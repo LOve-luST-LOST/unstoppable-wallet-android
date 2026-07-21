@@ -1,13 +1,15 @@
 package io.horizontalsystems.bankwallet.modules.multiswap.history
 
 import android.util.Log
+import io.horizontalsystems.bankwallet.BuildConfig
+import io.horizontalsystems.bankwallet.core.App
 import io.horizontalsystems.bankwallet.core.Clearable
 import io.horizontalsystems.bankwallet.core.managers.APIClient
 import io.horizontalsystems.bankwallet.core.providers.AppConfigProvider
+import io.horizontalsystems.bankwallet.entities.SimulateFailSwapMode
 import io.horizontalsystems.bankwallet.entities.SwapRecord
 import io.horizontalsystems.bankwallet.modules.multiswap.providers.AllBridgeAPI
 import io.horizontalsystems.bankwallet.modules.multiswap.providers.AllBridgeProvider
-import io.horizontalsystems.bankwallet.modules.multiswap.providers.OneInchProvider
 import io.horizontalsystems.bankwallet.modules.multiswap.providers.UnstoppableAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,12 +54,17 @@ class SwapSyncService(
             return
         }
         try {
-            val request = SwapTrackRequestBuilder.build(record)
-            val response = if (record.providerId == OneInchProvider.id) {
-                unstoppableAPI.trackEvm(request)
-            } else {
-                unstoppableAPI.track(request)
+            val call = SwapTrackRequestBuilder.build(record)
+            var request = call.request
+            if (BuildConfig.DEBUG && App.localStorage.simulateFailSwap == SimulateFailSwapMode.Server) {
+                request = request.copy(testActionRequired = true)
             }
+            val response = when (call.endpoint) {
+                SwapTrackRequestBuilder.Endpoint.Recorded -> unstoppableAPI.track(request)
+                SwapTrackRequestBuilder.Endpoint.Evm -> unstoppableAPI.trackEvm(request)
+                SwapTrackRequestBuilder.Endpoint.Thorchain -> unstoppableAPI.trackThorchain(request)
+            }
+
             if (record.transactionHash == null && response.hash != null) {
                 swapRecordManager.updateTransactionHash(record.id, response.hash)
             }
@@ -74,20 +81,25 @@ class SwapSyncService(
                 swapRecordManager.updateOutboundTransactionHash(record.id, outboundHash)
             }
 
-            val newStatus = mapStatus(response)
-                ?.takeIf { it != SwapStatus.valueOf(record.status) }
-                ?: return
+            val mappedStatus = mapStatus(response) ?: return
+            val currentStatus = runCatching { SwapStatus.valueOf(record.status) }.getOrNull()
+            val newPauseReason = response.meta?.pauseReason?.takeIf { mappedStatus == SwapStatus.ActionRequired }
+            val statusChanged = mappedStatus != currentStatus
+            val pauseReasonChanged = newPauseReason != record.pauseReason
+
+            if (!statusChanged && !pauseReasonChanged) return
+
             val newAmountOut = response.toAmount?.toBigDecimalOrNull()
             if (newAmountOut != null && newAmountOut > BigDecimal.ZERO) {
-                swapRecordManager.updateStatusAndAmountOut(record.id, newStatus, response.toAmount)
+                swapRecordManager.updateStatusAndAmountOut(record.id, mappedStatus, response.toAmount, newPauseReason)
             } else {
-                swapRecordManager.updateStatus(record.id, newStatus)
+                swapRecordManager.updateStatus(record.id, mappedStatus, newPauseReason)
             }
         } catch (e: IllegalArgumentException) {
             // Provider not supported for tracking — skip silently
             Log.e("SwapSyncService", "Provider not supported for tracking: ${record.providerId}", e)
         } catch (e: Throwable) {
-            Log.e("SwapSyncService", "Failed to sync record ${record.id}: ${e.message}")
+            Log.e("SwapSyncService", "Failed to sync record ${record.id}: ${e.message}", e)
         }
     }
 
@@ -107,9 +119,9 @@ class SwapSyncService(
                 ?: return
             val newAmountOut = response.receive?.amountFormatted?.takeIf { it > BigDecimal.ZERO }
             if (newAmountOut != null) {
-                swapRecordManager.updateStatusAndAmountOut(record.id, newStatus, newAmountOut.toPlainString())
+                swapRecordManager.updateStatusAndAmountOut(record.id, newStatus, newAmountOut.toPlainString(), null)
             } else {
-                swapRecordManager.updateStatus(record.id, newStatus)
+                swapRecordManager.updateStatus(record.id, newStatus, null)
             }
         } catch (e: Throwable) {
             Log.e("SwapSyncService", "Failed to sync AllBridge record ${record.id}: ${e.message}")
@@ -147,6 +159,7 @@ class SwapSyncService(
         "completed" -> SwapStatus.Completed
         "refunded" -> SwapStatus.Refunded
         "failed" -> SwapStatus.Failed
+        "action_required" -> SwapStatus.ActionRequired
         else -> null // "unknown" — leave status unchanged
     }
 

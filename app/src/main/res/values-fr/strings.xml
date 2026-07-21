@@ -28,7 +28,7 @@
     <string name="Button_Disconnect">Déconnecter</string>
     <string name="Button_Create">Créer</string>
     <string name="Button_Advanced">Avancé</string>
-    <string name="Button_Restore">Importation</string>
+    <string name="Button_Restore">Restaurer</string>
     <string name="Button_Reset">Reset</string>
     <string name="Button_Understand">Je comprends</string>
     <string name="Button_Switch">Commuter</string>
@@ -328,7 +328,7 @@
     <string name="Balance_Sort_PopupTitle">Trier par</string>
     <string name="Balance_Sort_Az">Nom</string>
     <string name="Balance_Sort_24hPriceChange">Changement de prix</string>
-    <string name="Balance_NoCoinsAlert">Vous n\'avez ajouté aucune pièce à ce portefeuille.</string>
+    <string name="Balance_NoCoinsAlert">Aucun token ici. Ajoutez-en un pour commencer.</string>
     <string name="Balance_NoAssetsToSend">Vous n\'avez pas d\'actifs à envoyer.</string>
     <string name="Balance_Network">Réseau</string>
     <string name="Balance_Format">Formater</string>
@@ -358,11 +358,8 @@
     <string name="Balance_Zcash_UnshieldedBalanceDetected_Info_Title">ZEC transparent détecté</string>
     <string name="Balance_Zcash_UnshieldedBalance_Info_Title">Montant transparent</string>
     <string name="Balance_Zcash_UnshieldedBalance_Info_Description">Vous avez un solde ZEC maintenu dans une adresse transparente. Pour l\'utiliser dans Unstoppable, il doit être protégé pour une vie privée totale.</string>
-    <string name="Balance_Zcash_UnshieldedBalance_Shield">Bouclier</string>
-    <string name="Balance_Zcash_Unified">Unifié</string>
-    <string name="Balance_Zcash_UnifiedDescription">Utiliser pour les transferts personnels et privés entre portefeuilles.</string>
     <string name="Balance_Zcash_Transparent">Transparence</string>
-    <string name="Balance_Zcash_TransparentDescription">Utilisé pour recevoir des échanges ou des services qui ne prennent pas en charge les adresses unifiées.</string>
+    <string name="Balance_Zcash_TransparentDescription">À utiliser pour recevoir des échanges ou des services qui ne supportent pas les adresses blindées.</string>
     <!--Send NFT-->
     <string name="SendNft_Title">Envoyer</string>
     <!--Send-->
@@ -586,15 +583,15 @@
     <string name="Swap_Price">Prix</string>
     <string name="Swap_AvailableBalance">Solde disponible</string>
     <string name="Swap_PriceImpact">Impact du prix</string>
-    <string name="Swap_ProviderRisk">Risque du fournisseur</string>
+    <string name="Swap_ProviderRisk">Risque d\'Itinéraire</string>
     <string name="Swap_ProviderRisk_NoRisk">Pas de risque</string>
     <string name="Swap_ProviderRisk_Risky">Risque</string>
     <string name="Swap_ProviderRisk_Unknown">Inconnu</string>
     <string name="Swap_ProviderRisk_AlertTitle">Risque de gel élevé !</string>
     <string name="Swap_ProviderRisk_AlertBody">Le fournisseur de ce swap spécifique (%s) a averti que ce swap serait probablement rejeté ou pourrait même être gelé. Revenez en arrière et sélectionnez un autre fournisseur de swap.</string>
     <string name="Swap_AmlRisk_Title">Risque Détecté</string>
-    <string name="Swap_AmlRisk_Description">Des risques potentiels ont été identifiés pour cette transaction. Lors du traitement, vos fonds peuvent être rejetés ou restreints. Veuillez choisir un autre fournisseur.</string>
-    <string name="Swap_AmlRisk_Button">Choisir un autre fournisseur</string>
+    <string name="Swap_AmlRisk_Description">Des risques potentiels ont été identifiés pour cette transaction. Lors du traitement, vos fonds peuvent être rejetés ou limités. Veuillez choisir un autre itinéraire.</string>
+    <string name="Swap_AmlRisk_Button">Choisir un Autre Itinéraire</string>
     <string name="Swap_AmlUnknown_Title">Alerte !</string>
     <string name="Swap_AmlUnknown_Description">Nous n\'avons pas pu compléter la vérification des risques pour cette transaction. Si vous continuez, cet échange peut rencontrer des retards, des rejets ou des restrictions pendant le traitement.</string>
     <string name="Swap_AmlUnknown_Button">Continuer avec le risque</string>
@@ -602,12 +599,12 @@
     <string name="Swap_AmlError_Description">Impossible d\'obtenir une réponse pour le moment. Veuillez réessayer.</string>
     <string name="Swap_AmlError_Button">Réessayer</string>
     <string name="Swap_EstimatedTime">Est. Time</string>
-    <string name="Swap_EstimatedTimeDescription">Temps approximatif pour recevoir des fonds. Échanger le traitement et les confirmations de transaction peut prendre un certain temps selon le réseau et le fournisseur.</string>
+    <string name="Swap_EstimatedTimeDescription">Temps approximatif pour recevoir les fonds. Le traitement du swap et les confirmations de transaction peuvent prendre du temps selon le réseau et l\'itinéraire.</string>
     <string name="Swap_MinimumReceived">Garantie</string>
     <string name="Swap_MinimumReceivedDescription">Ce montant est en cours de validation. Dès que le statut de la transaction est validé, vous serez en mesure d\'utiliser ces pièces. Le montant minimum d\'un utilisateur va </string>
     <string name="Swap_Slippage">Slippage</string>
     <string name="Swap_Recipient">Destinataire</string>
-    <string name="Swap_ErrorNoProviders">Aucun fournisseur</string>
+    <string name="Swap_ErrorNoProviders">Aucune Route</string>
     <string name="Swap_ErrorNoQuote">Aucun devis</string>
     <string name="Swap_ErrorInsufficientBalance">Solde insuffisant</string>
     <string name="Swap_ErrorTokenNotEnabled">Jeton non activé</string>
@@ -623,7 +620,7 @@
     <string name="Swap_Approving">Approbation</string>
     <string name="Swap_Swapping">Swapping</string>
     <string name="Swap_Quoting">Citation</string>
-    <string name="Swap_Providers">Fournisseurs</string>
+    <string name="Swap_Providers">Routes</string>
     <string name="Swap_AmountMin">(min)</string>
     <string name="Swap_AmountMax">(max)</string>
     <string name="Swap_YouPay">Vous payez</string>
@@ -645,12 +642,12 @@
     <string name="SwapConfirm_MevDescription">Activez la protection pour sécuriser votre swap et évitez de perdre de la valeur aux bots.</string>
     <string name="SwapError_FailedToFetchQuote">Impossible de récupérer le devis.</string>
     <string name="SwapTerms_Title">Échanger les conditions</string>
-    <string name="SwapTerms_TopText">Les agrégats non stoppables regroupent de multiples fournisseurs de swap décentralisés (DEX) et centralisés pour offrir des taux compétitifs et un large soutien aux actifs.</string>
-    <string name="SwapTerms_BottomText">Choisissez toujours un fournisseur de swap qui correspond à vos exigences.</string>
+    <string name="SwapTerms_TopText">Pour continuer, veuillez confirmer votre accord avec chaque élément.</string>
+    <string name="SwapTerms_BottomText">Choisissez toujours un itinéraire de swap qui correspond à vos besoins.</string>
     <string name="SwapTerms_RiskRestrictions">Risque de restrictions</string>
-    <string name="SwapTerms_RiskRestrictions_Info">Je comprends que certains fournisseurs de swap non-DEX appliquent une vérification des transactions (AML). Ces fournisseurs peuvent rejeter (et rembourser) les swaps, ou, dans de rares cas, (CSAM et terrorisme), geler les fonds et demander les données du KYC.</string>
+    <string name="SwapTerms_RiskRestrictions_Info">Certains itinéraires peuvent rejeter les swaps ou restreindre l\'accès aux fonds. Prêtez attention aux scores d\'itinéraire lors du choix d\'un itinéraire.</string>
     <string name="SwapTerms_UserResponsibility">Responsabilité de l\'utilisateur</string>
-    <string name="SwapTerms_UserResponsibility_Info">Je comprends que l\'utilisation de fournisseurs non-DEX comporte des risques supplémentaires et que ces risques sont de ma responsabilité.</string>
+    <string name="SwapTerms_UserResponsibility_Info">J\'ai examiné les risques possibles et j\'accepte la responsabilité de mon choix d\'itinéraire.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_SlippageTitle">Tolérance de Slippage</string>
     <string name="SwapSettings_RecipientAddressTitle">Adresse du destinataire</string>
@@ -663,12 +660,8 @@
     <string name="SwapSettings_Warning_UnusualSlippage">Votre transaction peut être frontrun</string>
     <string name="SwapSort_BestRate">Meilleur tarif</string>
     <string name="SwapSort_BestTime">Le plus rapide</string>
-    <string name="RiskLevel_ProviderRiskLevel">Niveaux de risque du fournisseur</string>
-    <string name="RiskLevel_ProviderRiskLevel_Description">Les étiquettes ci-dessous expliquent différents niveaux de risque pour les fournisseurs de swap. Choisissez en conséquence.</string>
-    <string name="RiskLevel_Auto_Description">Exécution automatique sur la chaîne. Les fonds ne peuvent pas être bloqués ou bloqués après soumission. Si le swap échoue, les fonds sont remboursés automatiquement.</string>
-    <string name="RiskLevel_Limited_Description">Le fournisseur opère en utilisant ses propres liquidités. Les rejets sont rares. Les gels sont théoriquement possibles mais très improbables.</string>
-    <string name="RiskLevel_Controlled_Description">Ces fournisseurs opèrent avec des liquidités de tierces parties et ont mis en place des politiques d\'AML. Dans la plupart des cas, les swaps sont rejetés et remboursés en cas de problème de LCA. Dans certaines situations, le fournisseur peut demander KYC avant de libérer des fonds.</string>
-    <string name="RiskLevel_Precheck_Description">Le prestataire effectue son propre test d\'adresse avant le traitement de swap. Les rejets sont rares. Les gels sont théoriquement possibles mais très improbables.</string>
+    <string name="RiskLevel_ProviderRiskLevel">Score de Route</string>
+    <string name="RiskLevel_ProviderRiskLevel_Description">Ces niveaux montrent comment les itinéraires gèrent les swaps et les vérifications de transaction.</string>
     <!-- Swap Confirmation -->
     <string name="ActivationRequired_DialogTitle">Activer le jeton</string>
     <string name="ActivationRequired_DialogDescription">Pour recevoir %1$s, vous devez activer le jeton. Le réseau Stellar nécessite une ligne de confiance pour chaque jeton. Sans elle, votre portefeuille ne peut pas recevoir %2$s — la transaction sera rejetée et les fonds ne seront pas livrés.</string>
@@ -680,10 +673,10 @@
     <string name="Activate_InsufficientBalance_Description">Vous n\'avez pas assez de solde XLM pour activer ce jeton.</string>
     <!-- Swap History -->
     <string name="SwapHistory_Title">Échanger l\'historique</string>
-    <string name="SwapHistory_EmptyList">Pas encore de swaps</string>
+    <string name="SwapHistory_EmptyList">Vous n\'avez pas encore d\'échanges en attente ou antérieurs.</string>
     <string name="SwapInfo_Title">Permuter les informations</string>
     <!-- Swap Info -->
-    <string name="SwapInfo_Provider">Fournisseur</string>
+    <string name="SwapInfo_Provider">Itinéraire</string>
     <string name="SwapInfo_SourceAddress">Adresse source</string>
     <string name="SwapInfo_StatusTitle">Statut de la transaction</string>
     <string name="SwapInfo_StatusDepositing">Dépôt</string>
@@ -723,8 +716,6 @@
     <string name="Transactions_Swap">Permuté</string>
     <string name="Transactions_Failed">Echoué</string>
     <string name="Transactions_Transfer">Transférer</string>
-    <string name="Transactions_Shield">Bouclier</string>
-    <string name="Transactions_Unshield">Débouclier</string>
     <string name="Transactions_ContractCall">Appel de contrat</string>
     <string name="Transactions_ExternalContractCall">Appel externe</string>
     <string name="Transactions_ContractCreation">Création du contrat</string>
@@ -984,15 +975,15 @@
     <!-- Backup Manager -->
     <string name="BackupManager_Title">Gestionnaire de sauvegarde</string>
     <string name="BackupManager_RestoreBackup">Restaurer la sauvegarde</string>
-    <string name="BackupManager_CreateBackup">Créer une nouvelle sauvegarde</string>
+    <string name="BackupManager_CreateBackup">Créer une sauvegarde</string>
     <string name="BackupManager_BаckupFile">Fichier de sauvegarde</string>
-    <string name="BackupManager_Wallets">WALLETS</string>
-    <string name="BackupManager_Other">AUTRE</string>
+    <string name="BackupManager_Wallets">Portefeuilles</string>
+    <string name="BackupManager_Other">Données</string>
     <string name="BackupManager_Restore">Restaurer</string>
     <string name="BackupManager_BackupFileContents">Liste des contenus dans le fichier de sauvegarde.</string>
-    <string name="BackupManager_MergeTitle">Avertissement</string>
+    <string name="BackupManager_MergeTitle">Attention !</string>
     <string name="BackupManager_MergeButton">Remplacer</string>
-    <string name="BackupManager_MergeDescription">Cette action écrasera vos contacts de paiement locaux.</string>
+    <string name="BackupManager_MergeDescription">Les contacts enregistrés seront remplacés par les données de la sauvegarde.</string>
     <string name="BackupManager_BackupRequired">Sauvegarde requise</string>
     <string name="BackupManager_WatchWallets">Regarder les portefeuilles</string>
     <string name="BackupManager_Watchlist">Favoris</string>
@@ -1173,6 +1164,110 @@
     <string name="ManageAccount_Wallets">Portefeuilles</string>
     <string name="ManageAccount_WatchAddresses">Regarder les portefeuilles</string>
     <string name="ManageAccount_DeleteWarning">Voulez-vous arrêter de surveiller cette adresse de portefeuille ?</string>
+
+    <string-array name="wallet_names">
+        <item>😰 Coffre Suant</item>
+        <item>🧂 Grand Livre Salé</item>
+        <item>💧 Définitivement Liquide</item>
+        <item>⏳ Transaction En Attente</item>
+        <item>🌈 Profits Imaginaires</item>
+        <item>🤡 Ancrage Bancal</item>
+        <item>😤 Cope Maximum</item>
+        <item>☠️ Rekt Certifié</item>
+        <item>👑 Couronne Insolvable</item>
+        <item>📉 Rendements Médiocres</item>
+        <item>🕸️ Portefeuille Poussiéreux</item>
+        <item>🧳 Sac Vintage</item>
+        <item>👻 Gains Fantômes</item>
+        <item>🐂 Taureau Délirant</item>
+        <item>🛒 Acheteur Compulsif</item>
+        <item>💼 Bagholder Premium</item>
+        <item>🤨 Rendement Suspect</item>
+        <item>♾️ Dip Éternel</item>
+        <item>💭 Conviction Empruntée</item>
+        <item>🦍 Singe Quantique</item>
+        <item>🔍 Nœud Paranoïaque</item>
+        <item>🛋️ Staker Paresseux</item>
+        <item>☕ Validateur Caféiné</item>
+        <item>🔮 Oracle Fauché</item>
+        <item>😴 Validateur Endormi</item>
+        <item>🎲 Génie Accidentel</item>
+        <item>🔐 Hodler Réticent</item>
+        <item>🤑 Oracle Cupide</item>
+        <item>😵 Arbitrage Confus</item>
+        <item>🏃 Exchange Frénétique</item>
+        <item>🪢 Fondation Arnaquée</item>
+        <item>🌉 Pont Louche</item>
+        <item>⛽ Frais Exorbitants</item>
+        <item>🌶️ Collatéral Épicé</item>
+        <item>🚌 Mempool Bondé</item>
+        <item>💨 Genèse Enfumée</item>
+        <item>🕯️ Portefeuille Hanté</item>
+        <item>⌛ Patience Infinie</item>
+        <item>🥶 Cope Glacé</item>
+        <item>💊 Courage Synthétique</item>
+        <item>🎖️ Noble Paysan</item>
+        <item>⚡ Millionnaire Temporaire</item>
+        <item>🗺️ Pauvreté Stratégique</item>
+        <item>😊 Rekt Joyeux</item>
+        <item>🏰 Citadelle Imprudente</item>
+        <item>🎰 Paradis Degen</item>
+        <item>🙏 Ruine Humble</item>
+        <item>💎 Mains de Diamant</item>
+        <item>🃏 Mains en Papier</item>
+        <item>🌙 Délire Lunaire</item>
+        <item>🚿 Trader Lessivé</item>
+        <item>🤏 Allocation Minuscule</item>
+        <item>🎯 Supposition Heureuse</item>
+        <item>🌊 Position Submergée</item>
+        <item>💤 Géant Endormi</item>
+        <item>🎪 Cirque Ambulant</item>
+        <item>🧸 Couverture Émotionnelle</item>
+        <item>🐯 Tigre en Papier</item>
+        <item>🔁 Gains Récursifs</item>
+        <item>🥴 Rendements Vertigineux</item>
+        <item>🏚️ Ferme Saisie</item>
+        <item>🤫 Baleine Silencieuse</item>
+        <item>🌅 Fausse Aube</item>
+        <item>📊 Marche Aléatoire</item>
+        <item>🌋 Montagne Volatile</item>
+        <item>🎁 Liquidation Surprise</item>
+        <item>🏄 Balade Risquée</item>
+        <item>🧲 Perte Magnétique</item>
+        <item>🏋️ Sac Lourd</item>
+        <item>🎈 Rendements Gonflés</item>
+        <item>🧪 Fonds Expérimental</item>
+        <item>🌸 Position Fragile</item>
+        <item>🧋 Token Bulleux</item>
+        <item>🏆 Trophée de Participation</item>
+        <item>🌝 Fonds Pleine Lune</item>
+        <item>🐸 Rare Pepe</item>
+        <item>🧟 Token Zombie</item>
+        <item>🦄 Gains Mythiques</item>
+        <item>🥊 Chance de Combat</item>
+        <item>🌟 Ignorance Bienheureuse</item>
+        <item>🦆 Canard en Caoutchouc</item>
+        <item>🎋 Protocole Bambou</item>
+        <item>🏴‍☠️ Trésor Pirate</item>
+        <item>🪄 Liquidité Magique</item>
+        <item>🏊 Coffre Immergé</item>
+        <item>🎊 Liquidation Chanceuse</item>
+        <item>🦋 Effet Papillon</item>
+        <item>🎸 Coffre Débranché</item>
+        <item>💥 Rendements Explosifs</item>
+        <item>🧠 Cerveau Lisse</item>
+        <item>🪦 Pool Mort</item>
+        <item>🎡 Économie Circulaire</item>
+        <item>🧘 Liquidation Zen</item>
+        <item>📌 Fond Raté</item>
+        <item>🏴 Forêt Sombre</item>
+        <item>😎 Perdant Confiant</item>
+        <item>🌪️ Rendement Chaotique</item>
+        <item>🧬 Protocole Mutant</item>
+        <item>🍕 Portefeuille Affamé</item>
+        <item>🎭 Lune Empruntée</item>
+    </string-array>
+
     <string name="Balance_Receive_BackupRequired_Description">Vous devez sauvegarder %1$s</string>
     <!--Network Settings-->
     <!-- Show Key -->
@@ -1600,4 +1695,108 @@
     <string name="Hud_Text_Connected">Connecté</string>
     <string name="BirthdayDatePicker_Title">Sélectionnez la date</string>
     <string name="BirthdayDatePicker_Description">Choisissez une date approximative de création de portefeuille. \nLa hauteur du bloc sera calculée automatiquement.</string>
+    <string name="BackupManager_RestoreBackupDescription">Restaurez votre portefeuille et les données de l\'application à partir d\'un fichier de sauvegarde.</string>
+    <string name="BackupManager_CreateBackupDescription">Créez un fichier de sauvegarde de vos portefeuilles et données d\'application.</string>
+    <string name="BackupManager_SelectItemsDescription">Choisissez ce que vous souhaitez inclure dans votre sauvegarde. Vous pouvez sauvegarder tous les éléments ou seulement certains éléments.</string>
+    <string name="BackupManager_RestoreItemsDescription">Choisissez ce que vous souhaitez restaurer. Vous pouvez restaurer tout ou uniquement certains éléments.</string>
+    <string name="BackupManager_CountSavedAddresses">%d adresses enregistrées</string>
+    <string name="BackupManager_CountAssets">%d actifs</string>
+    <string name="BackupManager_CountNetworks">%d réseaux</string>
+    <string name="BackupManager_CountWallets">%d portefeuilles</string>
+    <string name="AddZanoNode_AddNode">Ajouter un nœud</string>
+    <string name="AddZanoNode_NodeUrl">URL du nœud</string>
+    <string name="ZanoNodeSettings_Description">Choisissez le nœud que l\'application Unstoppable doit utiliser pour synchroniser le(s) portefeuille(s).</string>
+    <string name="LocalBackup_ProtectBackup">Protéger la sauvegarde</string>
+    <string name="LocalBackup_ProtectBackupDescription">Créez un mot de passe pour protéger votre fichier de sauvegarde.</string>
+    <string name="LocalBackup_BackupName">Nom de la sauvegarde</string>
+    <string name="LocalBackup_AddPassword">Ajouter un mot de passe</string>
+    <string name="LocalBackup_ConfirmPassword">Confirmer le mot de passe</string>
+    <string name="AddZanoNode_Warning_UrlExists">Un nœud avec cette URL existe déjà</string>
+    <string name="AddZanoNode_Error_InvalidUrl">L\'URL saisie est invalide. Les URL valides doivent avoir l\'un des schémas suivants : http, https</string>
+    <string name="Balance_Zcash_ShieldedDescription">À utiliser pour les transferts personnels et privés entre portefeuilles.</string>
+    <string name="RiskLevel_Excellent_Description">Exécution directe on-chain. Aucune vérification ou gel d\'itinéraire. Remboursements automatiques en cas d\'échec du swap.</string>
+    <string name="RiskLevel_Good_Description">L\'itinéraire vérifie automatiquement les transactions avant la fin. Si des problèmes sont détectés, le swap est rejeté et les fonds sont remboursés.</string>
+    <string name="RiskLevel_Fair_Description">Une vérification supplémentaire peut être nécessaire pour certaines transactions. Si des problèmes sont détectés, les fonds sont généralement remboursés automatiquement.</string>
+    <string name="SwapInfo_RequestRefund">Demander un remboursement</string>
+    <string name="SwapInfo_RequestRefundDescription">Le fournisseur a besoin de vos détails d\'échange pour traiter un remboursement. Ils seront inclus lorsque vous contacterez le fournisseur.</string>
+    <string name="SwapInfo_SwapId">ID d\'échange</string>
+    <string name="SwapInfo_Amount">Montant</string>
+    <string name="SwapInfo_RefundAddress">Adresse de remboursement</string>
+    <string name="SwapInfo_CopyDetails">Copier les détails</string>
+    <string name="SwapInfo_SwapStoppedByProvider">Échange arrêté par le fournisseur</string>
+    <string name="SwapInfo_SwapStoppedByProviderDescription">Votre dépôt a été reçu, mais le fournisseur n\'a pas pu terminer l\'échange. Demandez un remboursement ci-dessous pour récupérer vos fonds.</string>
+    <string name="BackupRequired_Title">Sauvegardez votre portefeuille</string>
+    <string name="BackupRequired_Description">Sans sauvegarde, la perte de votre téléphone signifie la perte permanente de vos fonds. Il n\'y a aucun moyen de les récupérer.</string>
+    <string name="BackupRequired_ManualBackupDescription">Notez votre phrase de récupération</string>
+    <string name="BackupRequired_LocalBackupDescription">Enregistrez un fichier chiffré sur votre appareil</string>
+    <string name="BackupRequired_RemindLater">Me le rappeler plus tard</string>
+    <string name="OpenCryptoPay_Title">Paiement</string>
+    <string name="OpenCryptoPay_Expired">Expiré</string>
+    <string name="OpenCryptoPay_Merchant">Marchand</string>
+    <string name="OpenCryptoPay_Amount">Montant</string>
+    <string name="OpenCryptoPay_ChooseAsset">Choisir un actif</string>
+    <string name="OpenCryptoPay_ChooseTokenDescription">Choisissez le token que vous souhaitez utiliser pour le paiement</string>
+    <string name="OpenCryptoPay_NoSupportedMethods">Aucune méthode de paiement prise en charge disponible pour ce portefeuille</string>
+    <string name="OpenCryptoPay_URL">URL</string>
+    <string name="OpenCryptoPay_ExpiresIn">Expire dans</string>
+    <string name="OpenCryptoPay_PaymentId">ID de paiement</string>
+    <string name="OpenCryptoPay_QuoteId">ID de devis</string>
+    <string name="OpenCryptoPay_ProofStatus">Statut de la preuve</string>
+    <string name="OpenCryptoPay_ProofStatus_Submitted">Soumis</string>
+    <string name="OpenCryptoPay_ProofStatus_Pending">En attente</string>
+    <string name="OpenCryptoPay_ProofStatus_Reconciliation">Rapprochement nécessaire</string>
+    <string name="OpenCryptoPay_RetryNow">Réessayer maintenant</string>
+    <string name="OpenCryptoPay_Error_NoActivePayment">Aucun paiement actif à ce terminal</string>
+    <string name="OpenCryptoPay_Error_FetchFailed">Échec de la récupération des détails de paiement</string>
+    <string name="OpenCryptoPay_Error_LoadFailed">Échec du chargement des détails de paiement</string>
+    <string name="OpenCryptoPay_Error_SubmitFailed">Impossible de soumettre le paiement au commerçant. Veuillez réessayer.</string>
+    <string name="Swap_SwapTime">Temps d\'échange</string>
+    <string name="Swap_PopularTokens">Tokens populaires</string>
+    <string name="Swap_YourTokens">Vos tokens</string>
+    <string name="Swap_TopTokens">Meilleurs tokens</string>
+    <string name="Swap_RecentSearch">Recherche récente</string>
+    <string name="SwapTerms_RiskRestrictions_Highlight">scores d\'itinéraire</string>
+    <string name="ZcashEndpointSettings_Description">Choisissez le serveur lightwallet que l\'application Unstoppable doit utiliser pour synchroniser le(s) portefeuille(s) Zcash.</string>
+    <string name="AddZcashEndpoint_AddEndpoint">Ajouter un point de terminaison</string>
+    <string name="AddZcashEndpoint_EndpointUrl">URL du point de terminaison</string>
+    <string name="AddZcashEndpoint_Warning_UrlExists">Un point de terminaison avec cette URL existe déjà</string>
+    <string name="AddZcashEndpoint_Error_InvalidUrl">L\'URL saisie est invalide. Une URL valide doit utiliser le schéma https</string>
+    <string name="Restore_BlockchainsDescription">Sélectionnez les blockchains que vous souhaitez restaurer.</string>
+    <string name="ManageAccounts_ViewOnlyWallet">Portefeuille en lecture seule</string>
+    <string name="Button_UnderstandAndContinue">Je comprends et je continue</string>
+    <string name="CreateNewWallet_Passkey">Passkey</string>
+    <string name="CreateNewWallet_PasskeyTerms">Conditions du Wallet Passkey</string>
+    <string name="CreateNewWallet_Standard">Standard</string>
+    <string name="CreateNewWallet_Standard_Description">Un portefeuille avec une phrase de récupération nécessitant une sauvegarde manuelle.</string>
+    <string name="CreateWallet_AddPassphrase">Ajouter une phrase secrète</string>
+    <string name="CreateWallet_AdvancedOptions">Options Avancées</string>
+    <string name="CreateWallet_PassphraseOptional">Phrase secrète (optionnel)</string>
+    <string name="CreateWallet_PassphraseShortDescription">Ajoute une protection supplémentaire à votre wallet. Requise avec votre phrase de récupération pour restaurer l\'accès.</string>
+    <string name="ImportWallet_Button_Understood">Unified</string>
+    <string name="ImportWallet_Passkey">Depuis Passkey</string>
+    <string name="ImportWallet_PrivateKey">depuis une Clé Privée</string>
+    <string name="ImportWallet_PrivateKey_Description">Importer un wallet à l\'aide d\'une clé privée.</string>
+    <string name="ManageAccount_WalletName">Nom du Wallet</string>
+    <string name="ManageAccounts_AddWallet">Ajouter un wallet</string>
+    <string name="ManageAccounts_CreateNewWalletDescription">Créez un nouveau wallet pour commencer ou en ajouter un nouveau.</string>
+    <string name="ManageAccounts_ExistingWallet">Wallet existant</string>
+    <string name="ManageAccounts_ExistingWalletDescription">Importez votre wallet si vous en avez déjà un pour continuer à l\'utiliser.</string>
+    <string name="ManageAccounts_NoActiveWallets">Aucun wallet actif</string>
+    <string name="ManageAccounts_ViewOnlyWalletDescription">Consulter un wallet par adresse sans accès aux fonds.</string>
+    <string name="PasskeyTerms_LimitedAccess">Accès multiplateforme limité</string>
+    <string name="PasskeyTerms_Responsibility">Responsabilité</string>
+    <string name="Passphrase_Placeholder">Phrase secrète (optionnel)</string>
+    <string name="SettingsLaunchScreen_Auto">Auto</string>
+    <string name="CreateNewWallet_Button_CreateStandardWallet">Créer un portefeuille standard</string>
+    <string name="CreateNewWallet_CreatePasskeyNotSupported_Description">Cet appareil ne prend pas en charge les portefeuilles Passkey. Vous pouvez créer un portefeuille standard à la place.</string>
+    <string name="CreateNewWallet_CreatePasskeyNotSupported_Title">Impossible de créer le Passkey</string>
+    <string name="CreateNewWallet_Passkey_Description">Un portefeuille avec une phrase de récupération enregistrée en toute sécurité par votre appareil.</string>
+    <string name="ImportWallet_Passkey_Description">Restaurez votre portefeuille à l\'aide de votre appareil.</string>
+    <string name="ImportWallet_RestorePasskeyNotSupported_Description">Cet appareil ne prend pas en charge la restauration par Passkey. Utilisez une autre méthode de restauration.</string>
+    <string name="ImportWallet_RestorePasskeyNotSupported_Title">La restauration par Passkey n\'est pas prise en charge</string>
+    <string name="PasskeyTerms_DeviceDependency">Dépendance à l\'appareil</string>
+    <string name="PasskeyTerms_DeviceDependency_Description">L\'accès nécessite votre appareil. La perte d\'accès peut entraîner la perte de vos fonds.</string>
+    <string name="PasskeyTerms_LimitedAccess_Description">Peut ne pas fonctionner sur tous les appareils ou plateformes.</string>
+    <string name="PasskeyTerms_Responsibility_Description">Vous êtes responsable de l\'accès à votre appareil. Unstoppable ne peut pas récupérer ce portefeuille si l\'accès est perdu.</string>
+    <string name="Send_Error_NodeUnreachable">Impossible de joindre le nœud. Veuillez vérifier votre connexion et réessayer.</string>
 </resources>

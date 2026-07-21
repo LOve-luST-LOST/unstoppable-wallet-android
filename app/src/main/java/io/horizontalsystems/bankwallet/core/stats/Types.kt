@@ -29,6 +29,7 @@ enum class StatPage(val key: String) {
     BlockchainSettingsEvm("blockchain_settings_evm"),
     BlockchainSettingsEvmAdd("blockchain_settings_evm_add"),
     BlockchainSettingsSolana("blockchain_settings_sol"),
+    BlockchainSettingsCryptoNote("blockchain_settings_cryptonote"),
     CloudBackup("cloud_backup"),
     FileBackup("file_backup"),
     CoinAnalytics("coin_analytics"),
@@ -89,6 +90,9 @@ enum class StatPage(val key: String) {
     ImportFullFromFiles("import_full_from_files"),
     ImportWallet("import_wallet"),
     ImportWalletFromKey("import_wallet_from_key"),
+
+    ImportWalletFromPrivateKey("import_wallet_from_private_key"),
+    ImportWalletFromPasskey("import_wallet_from_passkey"),
     ImportWalletFromKeyAdvanced("import_wallet_from_key_advanced"),
     ImportWalletFromCloud("import_wallet_from_cloud"),
     ImportWalletFromFiles("import_wallet_from_files"),
@@ -104,6 +108,7 @@ enum class StatPage(val key: String) {
     MarketOverview("market_overview"),
     MarketSearch("market_search"),
     NewWallet("new_wallet"),
+    NewWalletPasskey("new_wallet_passkey"),
     NewWalletAdvanced("new_wallet_advanced"),
     PrivateKeys("private_keys"),
     Privacy("privacy"),
@@ -185,6 +190,7 @@ sealed class StatEvent {
     data class OpenBlockchainSettingsBtc(val chainUid: String) : StatEvent()
     data class OpenBlockchainSettingsEvm(val chainUid: String) : StatEvent()
     data class OpenBlockchainSettingsEvmAdd(val chainUid: String) : StatEvent()
+    data class OpenBlockchainSettingsCryptoNote(val chainUid: String) : StatEvent()
 
     data class OpenCategory(val categoryUid: String) : StatEvent()
     data class OpenCoin(val coinUid: String) : StatEvent()
@@ -285,6 +291,7 @@ sealed class StatEvent {
             is OpenBlockchainSettingsBtc,
             is OpenBlockchainSettingsEvm,
             is OpenBlockchainSettingsEvmAdd,
+            is OpenBlockchainSettingsCryptoNote,
             is OpenCategory,
             is OpenCoin,
             is OpenPlatform,
@@ -390,6 +397,11 @@ sealed class StatEvent {
 
             is OpenBlockchainSettingsEvmAdd -> mapOf(
                 StatParam.Page to StatPage.BlockchainSettingsEvmAdd.key,
+                StatParam.ChainUid to chainUid
+            )
+
+            is OpenBlockchainSettingsCryptoNote -> mapOf(
+                StatParam.Page to StatPage.BlockchainSettingsCryptoNote.key,
                 StatParam.ChainUid to chainUid
             )
 

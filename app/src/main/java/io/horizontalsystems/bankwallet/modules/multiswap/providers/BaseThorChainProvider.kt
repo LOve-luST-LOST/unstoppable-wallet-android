@@ -1,9 +1,9 @@
 package io.horizontalsystems.bankwallet.modules.multiswap.providers
 
 import io.horizontalsystems.bankwallet.core.App
+import io.horizontalsystems.bankwallet.core.blockTime
 import io.horizontalsystems.bankwallet.core.derivation
 import io.horizontalsystems.bankwallet.core.managers.APIClient
-import io.horizontalsystems.bankwallet.core.blockTime
 import io.horizontalsystems.bankwallet.core.nativeTokenQueries
 import io.horizontalsystems.bankwallet.modules.multiswap.SwapFinalQuote
 import io.horizontalsystems.bankwallet.modules.multiswap.SwapQuote
@@ -32,8 +32,8 @@ abstract class BaseThorChainProvider(
     private val affiliate: String?,
     private val affiliateBps: Int?,
 ) : IMultiSwapProvider {
+    open val streamingInterval: Long = 1
     override val type = SwapProviderType.DEX
-    override val aml = false
     override val requireTerms = false
 
     protected val thornodeAPI =
@@ -116,7 +116,7 @@ abstract class BaseThorChainProvider(
         return assetsMap
     }
 
-    override fun isSingleChainSwap(tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String) = false
+    override fun isSingleTransactionSwap(tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String) = false
 
     override fun supports(blockchainType: BlockchainType): Boolean {
         // overriding fun supports(tokenFrom: Token, tokenTo: Token) makes this method redundant
@@ -176,7 +176,7 @@ abstract class BaseThorChainProvider(
             destination = destinationAddress,
             affiliate = affiliate,
             affiliateBps = affiliateBps,
-            streamingInterval = 1,
+            streamingInterval = streamingInterval,
             streamingQuantity = 0,
             liquidityToleranceBps = slippage?.movePointRight(2)?.toLong(),
             refundAddress = refundAddress,
@@ -186,6 +186,10 @@ abstract class BaseThorChainProvider(
 
     protected open fun getRefundAddress(tokenIn: Token): String? = null
     protected open fun getFromAddress(tokenIn: Token): String? = null
+
+    protected open suspend fun resolveDestinationAddress(tokenOut: Token): String {
+        return SwapHelper.getReceiveAddressForToken(tokenOut)
+    }
 
     private fun estimatedTime(quoteSwap: Response.QuoteSwap, tokenOut: Token): Long {
         val inbound = quoteSwap.inbound_confirmation_seconds ?: 0L
@@ -203,7 +207,7 @@ abstract class BaseThorChainProvider(
         recipient: io.horizontalsystems.bankwallet.entities.Address?,
         slippage: BigDecimal,
     ): SwapFinalQuote {
-        val destination = recipient?.hex ?: SwapHelper.getReceiveAddressForToken(tokenOut)
+        val destination = recipient?.hex ?: resolveDestinationAddress(tokenOut)
         val quoteSwap = quoteSwap(tokenIn, tokenOut, amountIn, slippage, destination, getRefundAddress(tokenIn), getFromAddress(tokenIn))
 
         val amountOut = quoteSwap.expected_amount_out.movePointLeft(8)

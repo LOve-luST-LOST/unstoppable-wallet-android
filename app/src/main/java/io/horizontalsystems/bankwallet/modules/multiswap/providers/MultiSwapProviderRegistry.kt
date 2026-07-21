@@ -5,9 +5,9 @@ object MultiSwapProviderRegistry {
         // Single-chain DEX providers
         OneInchProvider,
 //        UniswapProvider,
-//        UniswapV3Provider,
+        UniswapV3Provider,
 //        PancakeSwapProvider,
-//        PancakeSwapV3Provider,
+        PancakeSwapV3Provider,
 //        QuickSwapProvider,
         // Cross-chain providers
         ThorChainProvider,
@@ -18,13 +18,19 @@ object MultiSwapProviderRegistry {
         USwapProvider(UProvider.LetsExchange),
         USwapProvider(UProvider.StealthEx),
         USwapProvider(UProvider.Exolix),
+        USwapProvider(UProvider.Cce),
         USwapProvider(UProvider.Swapuz),
+        USwapProvider(UProvider.Barter),
+        USwapProvider(UProvider.Circle),
+        USwapProvider(UProvider.Pegasus),
     )
 
     private val providersById: Map<String, IMultiSwapProvider> by lazy {
         allProviders.associateBy { it.id }
     }
 
-    fun isSingleChainSwap(providerId: String, tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String): Boolean =
-        providersById[providerId]?.isSingleChainSwap(tokenInBlockchainTypeUid, tokenOutBlockchainTypeUid) ?: false
+    fun isSingleTransactionSwap(providerId: String, tokenInBlockchainTypeUid: String, tokenOutBlockchainTypeUid: String): Boolean {
+        val provider = providersById[providerId] ?: return false
+        return provider.isSingleTransactionSwap(tokenInBlockchainTypeUid, tokenOutBlockchainTypeUid)
+    }
 }
