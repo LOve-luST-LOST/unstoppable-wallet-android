@@ -1,0 +1,45 @@
+Unstoppable Wallet ist ein dezentrales Verwaltungswerkzeug, das eigens für Kryptowährungen entwickelt wurde.
+
+Es richtet sich an datenschutzbewusste Menschen, die Bitcoin, Ethereum und andere Kryptowährungen souverän und professionell verwalten und in sie investieren möchten.
+
+Bei der Entwicklung von Unstoppable stand Folgendes im Mittelpunkt:
+
+- Kapital sollte frei sein >> Es gibt Nutzern echte, unabhängige Kontrolle über ihr Kapital.
+
+- Kapital sollte grenzenlos sein >> Es funktioniert außerhalb der traditionellen Finanzebene und dient als Schweizer Messer für die Welt der dezentralen Finanzen (DeFi).
+
+- Kapital sollte privat sein >> Es gibt keine privaten Daten preis, hat keine Möglichkeit, Nutzer zu verfolgen, und ergreift zusätzliche Maßnahmen für den Schutz der Privatsphäre auf mehreren Ebenen.
+
+Wenn Ihnen das zusagt, ist Unstoppable genau das Richtige für Sie! Wir konzentrieren uns auf Ihre individuellen Bedürfnisse.
+
+FUNKTIONEN:
+
+- Nicht-treuhänderisches Multi-Wallet >> Verwalten Sie beliebig viele Kryptowährungen in mehreren Wallets im Portfolio-Stil, ohne Treuhänder. Dieses Wallet ist wie Ihre eigene Bank, in der Sie der einzige Kunde und allein verantwortlich sind. Ihre Vermögenswerte bleiben sicher und lassen sich leicht wiederherstellen, selbst wenn das Telefon gestohlen oder manipuliert wird.
+
+- Investmentorientiertes Wallet >> Unstoppable bringt unübertroffene Marktanalysen auf Ihr Gerät: erweiterte Sortierung, kuratierte Kategorien, umfassende Suchfilter und ereignisbasierte Warnungen.
+
+- Universelles Wallet >> Es unterstützt alle gängigen Blockchains und ist standardkonform aufgebaut: eine einzige Wallet-App für alles rund um Krypto.
+
+- Bitcoin-Wallet >> Das Wallet vereint die fortschrittlichsten verfügbaren Bitcoin-Funktionen: SPV, BIP 44/49/84/86/69-konform, Bitcoin-Timelocks, eigene Transaktionsgebühren und mehr.
+
+- DeFi-Wallet >> Volle Unterstützung für dezentrale Token-Swaps auf Ethereum, Binance Smart Chain, Polygon, Avalanche, Solana und weiteren sowie die Möglichkeit, über WalletConnect mit jedem Smart-Contract-basierten Dienst zu interagieren.
+
+- Ethereum-Wallet >> Volle Unterstützung für die Ethereum-Blockchain, ihr wachsendes Token-Ökosystem (ERC20, NFT usw.) und dezentrale Dienste wie ENS (Ethereum Name Service).
+
+- Ethereum-L2-Wallet >> Arbitrum, Optimism, Polygon.
+
+- Avalanche-Wallet >> Volle Unterstützung für die Avalanche C-Chain.
+
+- Binance-Wallet >> Volle Unterstützung für die originale Binance Chain (inkl. BEP2) und die Binance Smart Chain.
+
+- Crypto Academy >> Die App enthält zwei Kurse, die Neueinsteiger leicht verständlich in Kryptowährungen und das DeFi-Ökosystem einführen: Sicherheit, Aufbewahrung, Privatsphäre, Transaktionen und Tausch.
+
+- Wallet für Privacy Coins >> Unterstützt die wichtigsten Privacy Coins (Zcash, DASH) vollständig per SPV. Eines der wenigen Wallets, das vollständig abgeschirmte Zcash-Transaktionen beherrscht und Bitcoin-Transaktionen privatisieren kann.
+
+- Dezentrales Wallet >> Für die dezentrale Nutzung der meisten großen Blockchains entwickelt: Die App ist zum Senden und Empfangen von Transaktionen auf keinen Server eines Anbieters angewiesen, sondern spricht direkt mit den Netzwerken.
+
+- Auf Datenschutz ausgerichtet >> Entwickelt, um Ihre Privatsphäre selbst dann zu wahren, wenn sie am stärksten bedroht ist. Keine Benutzerkonten, die Ihre Daten speichern, keine Identitätsprüfungen, die Ihre Finanzen preisgeben könnten, und keine Interaktion mit traditionellen Finanzebenen. Die App unterstützt teilweise TOR, VPN-Unterstützung folgt bald.
+
+- Vollständig quelloffen >> Die bislang transparenteste Wallet-Anwendung. Der gesamte vierjährige Entwicklungsprozess und 100 % des Codes sind online frei zugänglich, sodass jeder sie prüfen oder weiterverwenden kann. Von Dritten überprüft und auditiert.
+
+Sei Unstoppable!

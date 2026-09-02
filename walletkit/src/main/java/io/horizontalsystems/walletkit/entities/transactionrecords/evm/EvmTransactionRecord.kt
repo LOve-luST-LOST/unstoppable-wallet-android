@@ -1,0 +1,117 @@
+package io.horizontalsystems.walletkit.entities.transactionrecords.evm
+
+import io.horizontalsystems.walletkit.entities.TransactionValue
+import io.horizontalsystems.walletkit.entities.transactionrecords.TransactionRecord
+import io.horizontalsystems.walletkit.modules.transactions.TransactionSource
+import io.horizontalsystems.marketkit.models.Token
+import java.math.BigDecimal
+
+open class EvmTransactionRecord(
+    transaction: EvmTransactionInfo,
+    baseToken: Token,
+    source: TransactionSource,
+    val protected: Boolean,
+    val foreignTransaction: Boolean = false,
+    spam: Boolean = false,
+    // display identity override; the two records of one AA swap share a
+    // transactionHash and need distinct uids to coexist in the list
+    customUid: String? = null,
+) :
+    TransactionRecord(
+        uid = customUid ?: transaction.hashString,
+        transactionHash = transaction.hashString,
+        transactionIndex = transaction.transactionIndex ?: 0,
+        blockHeight = transaction.blockNumber?.toInt(),
+        confirmationsThreshold = CONFIRMATIONS_THRESHOLD,
+        timestamp = transaction.timestamp,
+        failed = transaction.isFailed,
+        spam = spam,
+        source = source
+    ) {
+
+    val fee: TransactionValue?
+
+    init {
+        val feeAmount: Long? = transaction.gasUsed ?: transaction.gasLimit
+        val gasPrice = transaction.gasPrice
+
+        fee = if (feeAmount != null && gasPrice != null) {
+            val feeDecimal = feeAmount.toBigDecimal()
+                .multiply(gasPrice.toBigDecimal())
+                .movePointLeft(baseToken.decimals).stripTrailingZeros()
+
+            TransactionValue.CoinValue(baseToken, feeDecimal)
+        } else {
+            null
+        }
+    }
+
+    companion object {
+        const val CONFIRMATIONS_THRESHOLD: Int = 12
+
+        private fun sameType(value: TransactionValue, value2: TransactionValue): Boolean =
+            when {
+                value is TransactionValue.CoinValue && value2 is TransactionValue.CoinValue ->
+                    value.token == value2.token
+
+                value is TransactionValue.TokenValue && value2 is TransactionValue.TokenValue ->
+                    value.tokenName == value2.tokenName && value.tokenCode == value2.tokenCode && value.tokenDecimals == value2.tokenDecimals
+
+                value is TransactionValue.NftValue && value2 is TransactionValue.NftValue ->
+                    value.nftUid == value2.nftUid
+
+                else ->
+                    false
+            }
+
+        fun combined(incomingEvents: List<TransferEvent>, outgoingEvents: List<TransferEvent>): Pair<List<TransactionValue>, List<TransactionValue>> {
+            val values = (incomingEvents + outgoingEvents).map { it.value }
+            val resultIncoming: MutableList<TransactionValue> = mutableListOf()
+            val resultOutgoing: MutableList<TransactionValue> = mutableListOf()
+
+            for (value in values) {
+                if ((resultIncoming + resultOutgoing).any { sameType(value, it) }) {
+                    continue
+                }
+
+                val sameTypeValues = values.filter { sameType(value, it) }
+                val totalValue = sameTypeValues.map { it.decimalValue ?: BigDecimal.ZERO }.reduce { sum, t -> sum + t }
+                val resultValue = when (value) {
+                    is TransactionValue.CoinValue -> TransactionValue.CoinValue(value.token, totalValue)
+                    is TransactionValue.TokenValue -> TransactionValue.TokenValue(
+                        tokenName = value.tokenName,
+                        tokenCode = value.tokenCode,
+                        tokenDecimals = value.tokenDecimals,
+                        value = totalValue,
+                        coinIconPlaceholder = value.coinIconPlaceholder
+                    )
+
+                    is TransactionValue.RawValue -> value
+                    is TransactionValue.NftValue -> value.copy(value = totalValue)
+                    is TransactionValue.JettonValue -> value
+                }
+
+                if (totalValue > BigDecimal.ZERO) {
+                    resultIncoming.add(resultValue)
+                } else {
+                    resultOutgoing.add(resultValue)
+                }
+            }
+
+            return Pair(resultIncoming, resultOutgoing)
+        }
+    }
+
+}
+
+/** Kit-free projection of the ethereum-kit Transaction fields the records need. */
+data class EvmTransactionInfo(
+    val hashString: String,
+    val transactionIndex: Int?,
+    val blockNumber: Long?,
+    val timestamp: Long,
+    val isFailed: Boolean,
+    val gasUsed: Long?,
+    val gasLimit: Long?,
+    val gasPrice: Long?,
+)

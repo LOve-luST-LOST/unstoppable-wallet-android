@@ -1,0 +1,45 @@
+Unstoppable Wallet está diseñado expresamente como una herramienta de gestión descentralizada para criptomonedas.
+
+Está pensado para personas que valoran su privacidad y quieren gestionar Bitcoin, Ethereum y otras criptomonedas, e invertir en ellas de forma soberana y profesional.
+
+Unstoppable se ha construido teniendo en cuenta lo siguiente:
+
+- El capital debe ser libre >> Ofrece a los usuarios un control genuinamente independiente sobre su capital.
+
+- El capital no debe tener fronteras >> Funciona fuera de la capa financiera tradicional y actúa como una navaja suiza en el mundo de las finanzas descentralizadas (DeFi).
+
+- El capital debe ser privado >> No filtra datos privados, no tiene forma de rastrear a los usuarios y toma medidas adicionales para garantizar la privacidad en varias capas.
+
+Si esto encaja contigo, ¡Unstoppable es para ti! Estamos aquí para atender tus necesidades lo mejor posible.
+
+FUNCIONES DE LA CARTERA:
+
+- Multicartera sin custodia >> Gestiona cualquier número de criptomonedas en varias carteras tipo portafolio, sin custodia. Esta cartera es como tu propio banco, donde eres el único cliente y el único al mando. Mantiene los activos seguros y fáciles de restaurar incluso si el teléfono es robado o manipulado.
+
+- Cartera orientada a la inversión >> Unstoppable lleva a tu dispositivo un análisis del mercado cripto inigualable: clasificación avanzada, categorías supervisadas, filtros de búsqueda extensos y alertas basadas en eventos.
+
+- Cartera universal >> Admite todas las cadenas de bloques principales y está construida conforme a los estándares: una sola aplicación para todo lo cripto.
+
+- Cartera Bitcoin >> Reúne algunas de las funciones de Bitcoin más avanzadas disponibles: SPV, compatibilidad BIP 44/49/84/86/69, timelocks de Bitcoin, comisiones personalizadas y más.
+
+- Cartera DeFi >> Soporte completo para intercambios descentralizados de tokens en Ethereum, Binance Smart Chain, Polygon, Avalanche, Solana y más, además de la capacidad de interactuar con cualquier servicio basado en contratos inteligentes mediante el protocolo WalletConnect.
+
+- Cartera Ethereum >> Soporte completo para la cadena de bloques de Ethereum, su creciente ecosistema de tokens (ERC20, NFT, etc.) y servicios descentralizados como ENS (Ethereum Name Service).
+
+- Cartera Ethereum L2 >> Arbitrum, Optimism y Polygon.
+
+- Cartera Avalanche >> Soporte completo para la cadena Avalanche C-Chain.
+
+- Cartera Binance >> Soporte completo para la Binance Chain original (incluido BEP2) y Binance Smart Chain.
+
+- Crypto Academy >> La aplicación incluye dos cursos que introducen a los recién llegados en las criptomonedas y el ecosistema DeFi de forma fácil de digerir: seguridad, almacenamiento, privacidad, transacciones e intercambios.
+
+- Cartera para monedas de privacidad >> Admite por completo las principales monedas de privacidad (Zcash, DASH) mediante SPV. Una de las pocas carteras capaces de soportar transacciones Zcash totalmente blindadas y de privatizar las transacciones de Bitcoin.
+
+- Cartera descentralizada >> Diseñada para funcionar de forma descentralizada con la mayoría de las cadenas de bloques importantes: la aplicación no depende del servidor de ningún proveedor para enviar o recibir transacciones, sino que interactúa directamente con las redes.
+
+- Centrada en la privacidad >> Diseñada para preservar la privacidad incluso en los escenarios más intrusivos. No hay cuentas de usuario que guarden tus registros, ni verificaciones de identidad que expongan tus finanzas al mundo, ni interacción con las capas financieras tradicionales. La aplicación es parcialmente compatible con TOR y el soporte de VPN llegará pronto.
+
+- Totalmente de código abierto >> La aplicación de cartera más transparente hasta la fecha. Sus cuatro años de desarrollo y el 100 % de su código son accesibles en línea para que cualquiera pueda evaluarlos o reutilizarlos. Verificada y auditada por terceros.
+
+¡Sé Unstoppable!

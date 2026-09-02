@@ -2,108 +2,60 @@ package io.horizontalsystems.bankwallet.core.providers
 
 import io.horizontalsystems.bankwallet.BuildConfig
 import io.horizontalsystems.bankwallet.R
-import io.horizontalsystems.bankwallet.core.ILocalStorage
-import io.horizontalsystems.bankwallet.core.order
-import io.horizontalsystems.bankwallet.entities.Currency
+import io.horizontalsystems.walletkit.core.ILocalStorage
+import io.horizontalsystems.walletkit.core.order
+import io.horizontalsystems.walletkit.core.providers.IAppConfigProvider
+import io.horizontalsystems.walletkit.entities.Currency
 import io.horizontalsystems.marketkit.models.BlockchainType
 import java.math.BigDecimal
 
-class AppConfigProvider(localStorage: ILocalStorage) {
+class AppConfigProvider(localStorage: ILocalStorage) : IAppConfigProvider {
 
-    val appId by lazy { localStorage.appId }
-    val appVersion by lazy { BuildConfig.VERSION_NAME }
-    val appBuild by lazy { BuildConfig.VERSION_CODE }
-    val companyWebPageLink by lazy { Translator.getString(R.string.companyWebPageLink) }
-    val appWebPageLink by lazy { Translator.getString(R.string.appWebPageLink) }
-    val analyticsLink by lazy { Translator.getString(R.string.analyticsLink) }
-    val appGithubLink by lazy { Translator.getString(R.string.appGithubLink) }
-    val appTwitterLink by lazy { Translator.getString(R.string.appTwitterLink) }
-    val appTelegramLink by lazy { Translator.getString(R.string.appTelegramLink) }
-    val reportEmail by lazy { Translator.getString(R.string.reportEmail) }
-    val releaseNotesUrl by lazy { Translator.getString(R.string.releaseNotesUrl) }
-    val mempoolSpaceUrl: String = "https://mempool.space"
-    val blockCypherUrl: String = "https://api.blockcypher.com"
-    val walletConnectUrl = "relay.walletconnect.com"
-    val walletConnectProjectId by lazy { Translator.getString(R.string.walletConnectV2Key) }
-    val walletConnectAppMetaDataName by lazy { Translator.getString(R.string.walletConnectAppMetaDataName) }
-    val walletConnectAppMetaDataUrl by lazy { Translator.getString(R.string.walletConnectAppMetaDataUrl) }
-    val walletConnectAppMetaDataIcon by lazy { Translator.getString(R.string.walletConnectAppMetaDataIcon) }
-    val accountsBackupFileSalt by lazy { Translator.getString(R.string.accountsBackupFileSalt) }
-    val simplexSupportChat = "https://smp11.simplex.im/g#yTrDh716RZCNYsdPSDrqMMlHnqZlW4XJGnFTugBrsAI"
-    val nymVpnLink = "https://nymtechnologies.pxf.io/N9vnr1"
-    val telegramSupportChat = "https://t.me/m/1TNZ9JE4MTNi"
+    override val appId by lazy { localStorage.appId }
+    override val appVersion by lazy { BuildConfig.VERSION_NAME }
+    override val appBuild by lazy { BuildConfig.VERSION_CODE }
+    override val companyWebPageLink = BuildConfig.COMPANY_WEB_PAGE_LINK
+    override val appWebPageLink = BuildConfig.APP_WEB_PAGE_LINK
+    override val analyticsLink = BuildConfig.ANALYTICS_LINK
+    override val appGithubLink = BuildConfig.APP_GITHUB_LINK
+    override val appTwitterLink = BuildConfig.APP_TWITTER_LINK
+    override val appTelegramLink = BuildConfig.APP_TELEGRAM_LINK
+    override val reportEmail = BuildConfig.REPORT_EMAIL
+    override val releaseNotesUrl = BuildConfig.RELEASE_NOTES_URL
+    override val mempoolSpaceUrl: String = "https://mempool.space"
+    override val blockCypherUrl: String = "https://api.blockcypher.com"
+    override val walletConnectUrl = "relay.walletconnect.com"
+    override val walletConnectProjectId = BuildConfig.WALLET_CONNECT_V2_KEY
+    override val walletConnectAppMetaDataName = BuildConfig.WALLET_CONNECT_APP_META_DATA_NAME
+    override val walletConnectAppMetaDataUrl = BuildConfig.WALLET_CONNECT_APP_META_DATA_URL
+    override val walletConnectAppMetaDataIcon = BuildConfig.WALLET_CONNECT_APP_META_DATA_ICON
+    override val simplexSupportChat = "https://smp11.simplex.im/g#yTrDh716RZCNYsdPSDrqMMlHnqZlW4XJGnFTugBrsAI"
+    override val nymVpnLink = "https://nymtechnologies.pxf.io/N9vnr1"
+    override val telegramSupportChat = "https://t.me/m/1TNZ9JE4MTNi"
 
-    val blocksDecodedEthereumRpc by lazy {
-        Translator.getString(R.string.blocksDecodedEthereumRpc)
-    }
-    val twitterBearerToken by lazy {
-        Translator.getString(R.string.twitterBearerToken)
-    }
-    val etherscanApiKey by lazy {
-        Translator.getString(R.string.etherscanKey).split(",")
-    }
-    val bscscanApiKey by lazy {
-        Translator.getString(R.string.bscscanKey).split(",")
-    }
-    val otherScanApiKey by lazy {
-        Translator.getString(R.string.otherScanKey).split(",")
-    }
-    val guidesUrl by lazy {
-        Translator.getString(R.string.guidesUrl)
-    }
-    val eduUrl by lazy {
-        Translator.getString(R.string.eduUrl)
-    }
-    val faqUrl by lazy {
-        Translator.getString(R.string.faqUrl)
-    }
-    val coinsJsonUrl by lazy {
-        Translator.getString(R.string.coinsJsonUrl)
-    }
-    val providerCoinsJsonUrl by lazy {
-        Translator.getString(R.string.providerCoinsJsonUrl)
-    }
+    override val blocksDecodedEthereumRpc = BuildConfig.BLOCKS_DECODED_ETHEREUM_RPC
+    override val twitterBearerToken = BuildConfig.TWITTER_BEARER_TOKEN
+    override val etherscanApiKey = BuildConfig.ETHERSCAN_KEY.split(",")
+    override val bscscanApiKey = BuildConfig.BSCSCAN_KEY.split(",")
+    override val otherScanApiKey = BuildConfig.OTHER_SCAN_KEY.split(",")
+    override val guidesUrl = BuildConfig.GUIDES_URL
+    override val eduUrl = BuildConfig.EDU_URL
+    override val faqUrl = BuildConfig.FAQ_URL
+    override val coinsJsonUrl = BuildConfig.COINS_JSON_URL
+    override val providerCoinsJsonUrl = BuildConfig.PROVIDER_COINS_JSON_URL
+    override val marketApiBaseUrl = BuildConfig.MARKET_API_BASE_URL
+    override val marketApiKey = BuildConfig.MARKET_API_KEY
+    override val openSeaApiKey = BuildConfig.OPEN_SEA_API_KEY
+    override val trongridApiKeys: List<String> = BuildConfig.TRONGRID_API_KEYS.split(",")
+    override val udnApiKey = BuildConfig.UDN_API_KEY
+    override val oneInchApiKey = BuildConfig.ONE_INCH_API_KEY
+    override val thorchainApiKey = BuildConfig.THORCHAIN_API_KEY
+    override val appLinksHost = BuildConfig.APP_LINKS_HOST
 
-    val marketApiBaseUrl by lazy {
-        Translator.getString(R.string.marketApiBaseUrl)
-    }
+    override val fiatDecimal: Int = 2
+    override val feeRateAdjustForCurrencies: List<String> = listOf("USD", "EUR")
 
-    val marketApiKey by lazy {
-        Translator.getString(R.string.marketApiKey)
-    }
-
-    val openSeaApiKey by lazy {
-        Translator.getString(R.string.openSeaApiKey)
-    }
-
-    val solanaAlchemyApiKey by lazy {
-        Translator.getString(R.string.solanaAlchemyApiKey)
-    }
-
-    val solanaJupiterApiKey by lazy {
-        Translator.getString(R.string.solanaJupiterApiKey)
-    }
-
-    val trongridApiKeys: List<String> by lazy {
-        Translator.getString(R.string.trongridApiKeys).split(",")
-    }
-
-    val udnApiKey by lazy {
-        Translator.getString(R.string.udnApiKey)
-    }
-
-    val oneInchApiKey by lazy {
-        Translator.getString(R.string.oneInchApiKey)
-    }
-
-    val appLinksHost by lazy {
-        Translator.getString(R.string.appLinksHost)
-    }
-
-    val fiatDecimal: Int = 2
-    val feeRateAdjustForCurrencies: List<String> = listOf("USD", "EUR")
-
-    val currencies: List<Currency> = listOf(
+    override val currencies: List<Currency> = listOf(
         Currency("AUD", "A$", 2, R.drawable.icon_32_flag_australia),
         Currency("ARS", "$", 2, R.drawable.icon_32_flag_argentine),
         Currency("BRL", "R$", 2, R.drawable.icon_32_flag_brazil),
@@ -125,7 +77,7 @@ class AppConfigProvider(localStorage: ILocalStorage) {
         Currency("ZAR", "R", 2, R.drawable.icon_32_flag_south_africa),
     )
 
-    val donateAddresses: Map<BlockchainType, String> by lazy {
+    override val donateAddresses: Map<BlockchainType, String> by lazy {
         if (BuildConfig.FDROID_BUILD) {
             mapOf(
                 BlockchainType.Bitcoin to "bc1qy3ekl877sll3pzw9ramknx0wgyxfhzlccv940y",
@@ -177,7 +129,7 @@ class AppConfigProvider(localStorage: ILocalStorage) {
 
     // coinCode -> risk threshold (used for dust detection scoring)
     // spam = risk/10 (auto-spam), risk = config value (+3 points), danger = risk*5 (+2 points)
-    val spamCoinValueLimits: Map<String, BigDecimal> = mapOf(
+    override val spamCoinValueLimits: Map<String, BigDecimal> = mapOf(
         "XLM" to BigDecimal("0.1"),
         "USDT" to BigDecimal("1"),
         "USDC" to BigDecimal("1"),
@@ -193,32 +145,21 @@ class AppConfigProvider(localStorage: ILocalStorage) {
         "SOL" to BigDecimal("0.000001"),
     )
 
-    val chainalysisBaseUrl by lazy {
-        Translator.getString(R.string.chainalysisBaseUrl)
-    }
+    override val chainalysisBaseUrl = BuildConfig.CHAINALYSIS_BASE_URL
 
-    val chainalysisApiKey by lazy {
-        Translator.getString(R.string.chainalysisApiKey)
-    }
+    override val chainalysisApiKey = BuildConfig.CHAINALYSIS_API_KEY
 
-    val hashDitBaseUrl by lazy {
-        Translator.getString(R.string.hashDitBaseUrl)
-    }
+    override val hashDitBaseUrl = BuildConfig.HASH_DIT_BASE_URL
 
-    val hashDitApiKey by lazy {
-        Translator.getString(R.string.hashDitApiKey)
-    }
+    override val hashDitApiKey = BuildConfig.HASH_DIT_API_KEY
 
-    val uswapApiBaseUrl by lazy {
-        Translator.getString(R.string.uswapApiBaseUrl)
-    }
+    override val uswapApiBaseUrl = BuildConfig.USWAP_API_BASE_URL
 
-    val uswapApiKey by lazy {
-        Translator.getString(R.string.uswapApiKey)
-    }
+    override val uswapApiKey = BuildConfig.USWAP_API_KEY
 
-    val oneInchPartnerFeeAddress by lazy {
-        Translator.getString(R.string.oneInchPartnerFeeAddress)
-    }
+    override val oneInchPartnerFeeAddress = BuildConfig.ONE_INCH_PARTNER_FEE_ADDRESS
 
+    override val swapFeeBps: Int = BuildConfig.SWAP_FEE_BPS
+
+    override val fdroidBuild: Boolean = BuildConfig.FDROID_BUILD
 }

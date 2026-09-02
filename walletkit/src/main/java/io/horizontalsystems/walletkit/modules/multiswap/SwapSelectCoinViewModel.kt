@@ -1,0 +1,296 @@
+package io.horizontalsystems.walletkit.modules.multiswap
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import io.horizontalsystems.walletkit.core.App
+import io.horizontalsystems.walletkit.core.defaultTokenQuery
+import io.horizontalsystems.walletkit.core.eligibleTokens
+import io.horizontalsystems.walletkit.core.sorting.SortCriterion
+import io.horizontalsystems.walletkit.core.sorting.TokenSortContext
+import io.horizontalsystems.walletkit.core.supported
+import io.horizontalsystems.walletkit.core.supportedTokens
+import io.horizontalsystems.walletkit.core.supports
+import io.horizontalsystems.walletkit.entities.CurrencyValue
+import io.horizontalsystems.walletkit.entities.Wallet
+import io.horizontalsystems.walletkit.modules.balance.BalanceSorter
+import io.horizontalsystems.walletkit.modules.multiswap.SwapSelectCoinViewModel.Companion.RECENT_LIMIT
+import io.horizontalsystems.walletkit.modules.receive.FullCoinsProvider
+import io.horizontalsystems.marketkit.models.BlockchainType
+import io.horizontalsystems.marketkit.models.FullCoin
+import io.horizontalsystems.marketkit.models.Token
+import io.horizontalsystems.marketkit.models.TokenQuery
+import io.horizontalsystems.marketkit.models.TokenType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.math.BigDecimal
+
+class SwapSelectCoinViewModel(
+    private val otherSelectedToken: Token?,
+    // "You Get" side: tokens the account can't hold stay selectable — the swap is
+    // delivered to an external address the user enters before confirmation
+    private val allowExternalReceive: Boolean,
+) : ViewModel() {
+    // Account-scoped state is resolved per call, not snapshotted at construction:
+    // the picker can outlive an account switch, and a long-lived snapshot would mix
+    // old-account sections with new-account filtering
+    private var coinsProvider: FullCoinsProvider? = null
+    private val adapterManager = App.adapterManager
+    private val currencyManager = App.currencyManager
+    private val marketKit = App.marketKit
+    private val localStorage = App.localStorage
+    private var query = ""
+
+    private var popular = listOf<CoinBalanceItem>()
+    private var yourTokens = listOf<CoinBalanceItem>()
+    private var topTokens = listOf<CoinBalanceItem>()
+    private var searchResults = listOf<CoinBalanceItem>()
+    private var recent = listOf<CoinBalanceItem>()
+
+    var uiState by mutableStateOf(
+        SwapSelectCoinUiState(
+            query = query,
+            popular = popular,
+            yourTokens = yourTokens,
+            topTokens = topTokens,
+            searchResults = searchResults,
+            recent = recent,
+        )
+    )
+        private set
+
+    init {
+        viewModelScope.launch {
+            loadSections()
+            emitState()
+        }
+    }
+
+    // Returns a provider bound to the currently active account, rebuilding it after
+    // an account switch so search never serves results scoped to a stale account
+    private fun currentCoinsProvider(): FullCoinsProvider? {
+        val account = App.accountManager.activeAccount ?: run {
+            coinsProvider = null
+            return null
+        }
+
+        coinsProvider?.let { cached ->
+            if (cached.activeAccount == account) return cached
+        }
+
+        return FullCoinsProvider(App.marketKit, account, filterByAccountSupport = !allowExternalReceive)
+            .apply {
+                setActiveWallets(App.walletManager.activeWallets)
+                setQuery(query)
+            }
+            .also { coinsProvider = it }
+    }
+
+    fun setQuery(q: String) {
+        query = q
+        coinsProvider?.setQuery(q)
+        viewModelScope.launch {
+            searchResults = if (q.isBlank()) emptyList() else search(q)
+            emitState()
+        }
+    }
+
+    /**
+     * Records a token that the user picked while the search field was active, so it can be shown
+     * in the Recent section. Most recent first, deduplicated, capped at [RECENT_LIMIT].
+     */
+    fun onRecentTokenSelected(token: Token) {
+        val id = token.tokenQuery.id
+        val ids = (listOf(id) + localStorage.swapRecentTokenQueryIds.filter { it != id })
+            .take(RECENT_LIMIT)
+        localStorage.swapRecentTokenQueryIds = ids
+
+        viewModelScope.launch {
+            recent = loadRecent(ids)
+            emitState()
+        }
+    }
+
+    private suspend fun loadRecent(ids: List<String>): List<CoinBalanceItem> =
+        withContext(Dispatchers.Default) {
+            val activeWallets = App.walletManager.activeWallets
+            // recent ids are stored globally, so after an account switch they may name
+            // tokens the now-active account can't hold
+            ids.mapNotNull { id -> TokenQuery.fromId(id)?.let { marketKit.token(it) } }
+                .filter { supportedByAccount(it) }
+                .map { coinBalanceItem(it, activeWallets) }
+        }
+
+    private fun coinBalanceItem(token: Token, activeWallets: List<Wallet>): CoinBalanceItem {
+        val balance = activeWallets.firstOrNull { it.token == token }?.let {
+            adapterManager.getBalanceAdapterForWallet(it)?.balanceData?.available
+        }
+        return CoinBalanceItem(token, balance, getFiatValue(token, balance))
+    }
+
+    private suspend fun loadSections() = withContext(Dispatchers.Default) {
+        val activeWallets = App.walletManager.activeWallets
+
+        // Recent — tokens the user picked previously while searching
+        recent = loadRecent(localStorage.swapRecentTokenQueryIds)
+
+        // Your Tokens — all enabled tokens, sorted as on the main Wallet screen
+        yourTokens = activeWallets
+            .map { coinBalanceItem(it.token, activeWallets) }
+            .sortedByCriteria(BalanceSorter.VALUE_CRITERIA)
+
+        // Popular Tokens — context-aware list (built from the opposite token), minus
+        // tokens the active account can't hold (they'd be dead bubbles)
+        popular = SwapPopularTokens.build(marketKit, otherSelectedToken)
+            .filter { supportedByAccount(it) }
+            .map { CoinBalanceItem(it, null, null) }
+
+        // Top Tokens — top 25 by market cap, excluding everything in Popular and Your Tokens
+        val excludedIds = (popular + yourTokens).map { it.token.tokenQuery.id }.toMutableSet()
+        val top = mutableListOf<CoinBalanceItem>()
+        val topCoins = marketKit.fullCoins("", 100)
+            .sortedBy { it.coin.marketCapRank ?: Int.MAX_VALUE }
+        // read at call time: the picker can outlive an account switch
+        val accountType = App.accountManager.activeAccount?.type
+        for (fullCoin in topCoins) {
+            if (top.size >= 25) break
+
+            val eligible = if (accountType != null && !allowExternalReceive) {
+                fullCoin.eligibleTokens(accountType)
+            } else {
+                externallyReceivableTokens(fullCoin)
+            }
+            val representative = eligible
+                .map { CoinBalanceItem(it, null, null) }
+                .sortedByCriteria(
+                    listOf(SortCriterion.CodeNativeFirst, SortCriterion.BlockchainOrder, SortCriterion.Badge)
+                )
+                .firstOrNull { it.token.tokenQuery.id !in excludedIds }
+                ?: continue
+
+            top.add(representative)
+            excludedIds.add(representative.token.tokenQuery.id)
+        }
+        topTokens = top
+    }
+
+    private suspend fun search(q: String): List<CoinBalanceItem> = withContext(Dispatchers.Default) {
+        val activeWallets = App.walletManager.activeWallets
+        val coinsProvider = currentCoinsProvider()
+
+        if (coinsProvider != null) {
+            val accountType = coinsProvider.activeAccount.type
+            coinsProvider.getItems()
+                .map { fullCoin ->
+                    if (allowExternalReceive) {
+                        externallyReceivableTokens(fullCoin)
+                    } else {
+                        fullCoin.eligibleTokens(accountType)
+                    }
+                }
+                .flatten()
+                .map { token ->
+                    val wallet = activeWallets.firstOrNull { it.token == token }
+                    val balance = wallet?.let {
+                        adapterManager.getBalanceAdapterForWallet(it)?.balanceData?.available
+                    }
+                    CoinBalanceItem(token, balance, getFiatValue(token, balance))
+                }
+                .sortedByCriteria(
+                    listOf(
+                        SortCriterion.Enabled,
+                        SortCriterion.FilterRelevance,
+                        SortCriterion.CodeNativeFirst,
+                        SortCriterion.BlockchainOrder,
+                        SortCriterion.Badge
+                    ),
+                    TokenSortContext(filter = q, enabledTokens = activeWallets.map { it.token }.toSet())
+                )
+        } else {
+            marketKit.fullCoins(q, 100)
+                .flatMap { fullCoin -> fullCoin.tokens }
+                .filter { it.blockchainType in BlockchainType.supported }
+                .map { token -> CoinBalanceItem(token, null, null) }
+        }
+    }
+
+    private fun emitState() {
+        viewModelScope.launch {
+            uiState = SwapSelectCoinUiState(
+                query = query,
+                popular = popular,
+                yourTokens = yourTokens,
+                topTokens = topTokens,
+                searchResults = searchResults,
+                recent = recent,
+            )
+        }
+    }
+
+    // For external delivery the derivation/address-format variants of a chain are
+    // indistinguishable — the funds go to whatever address the user enters — so only
+    // the chain's default variant is offered (e.g. one BTC row with BIP84, not four)
+    private fun isExternallyReceivable(token: Token): Boolean {
+        val type = token.type
+        return (type !is TokenType.Derived && type !is TokenType.AddressTyped) ||
+            token.tokenQuery == token.blockchainType.defaultTokenQuery
+    }
+
+    private fun externallyReceivableTokens(fullCoin: FullCoin): List<Token> =
+        fullCoin.supportedTokens.filter { isExternallyReceivable(it) }
+
+    private fun supportedByAccount(token: Token): Boolean {
+        // externally receivable tokens are still narrowed to the chain-default variant,
+        // so recents saved by other sessions (e.g. BTC BIP44) stay canonical here too
+        if (allowExternalReceive) return isExternallyReceivable(token)
+        // read at call time: the picker can outlive an account switch
+        val accountType = App.accountManager.activeAccount?.type ?: return true
+        return token.supports(accountType) && token.blockchainType.supports(accountType)
+    }
+
+    private fun getFiatValue(token: Token, balance: BigDecimal?): CurrencyValue? {
+        return balance?.let {
+            getXRate(token)?.multiply(it)
+        }?.let { fiatBalance ->
+            CurrencyValue(currencyManager.baseCurrency, fiatBalance)
+        }
+    }
+
+    private fun getXRate(token: Token): BigDecimal? {
+        val currency = currencyManager.baseCurrency
+        return marketKit.coinPrice(token.coin.uid, currency.code)?.let {
+            if (it.expired) {
+                null
+            } else {
+                it.value
+            }
+        }
+    }
+
+    class Factory(
+        private val otherSelectedToken: Token?,
+        private val allowExternalReceive: Boolean,
+    ) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return SwapSelectCoinViewModel(otherSelectedToken, allowExternalReceive) as T
+        }
+    }
+
+    companion object {
+        private const val RECENT_LIMIT = 10
+    }
+}
+
+data class SwapSelectCoinUiState(
+    val query: String,
+    val popular: List<CoinBalanceItem>,
+    val yourTokens: List<CoinBalanceItem>,
+    val topTokens: List<CoinBalanceItem>,
+    val searchResults: List<CoinBalanceItem>,
+    val recent: List<CoinBalanceItem>,
+)

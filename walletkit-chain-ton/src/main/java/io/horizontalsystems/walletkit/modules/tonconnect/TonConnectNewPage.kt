@@ -1,0 +1,27 @@
+package io.horizontalsystems.walletkit.modules.tonconnect
+
+import androidx.compose.runtime.Composable
+import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
+import io.horizontalsystems.walletkit.modules.nav3.HSNavigation
+import io.horizontalsystems.walletkit.modules.nav3.HSPage
+import io.horizontalsystems.walletkit.modules.nav3.LocalResultEventBus
+import io.horizontalsystems.walletkit.serializers.DAppRequestEntitySerializer
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class TonConnectNewPage(@Serializable(with = DAppRequestEntitySerializer::class) val input: DAppRequestEntity) : HSPage() {
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val resultEventBus = LocalResultEventBus.current
+        TonConnectNewScreen(
+            navigation = navigation,
+            requestEntity = input,
+            onResult = { approved ->
+                resultEventBus.sendResult(Result(approved))
+                navigation.removeLastOrNull()
+            },
+        )
+    }
+
+    data class Result(val approved: Boolean)
+}

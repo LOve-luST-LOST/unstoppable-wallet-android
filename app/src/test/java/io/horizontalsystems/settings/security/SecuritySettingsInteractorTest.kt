@@ -4,9 +4,9 @@
 //import com.nhaarman.mockito_kotlin.mock
 //import com.nhaarman.mockito_kotlin.verify
 //import com.nhaarman.mockito_kotlin.verifyNoMoreInteractions
-//import io.horizontalsystems.bankwallet.core.*
-//import io.horizontalsystems.bankwallet.entities.BiometryType
-//import io.horizontalsystems.bankwallet.modules.RxBaseTest
+//import io.horizontalsystems.walletkit.core.*
+//import io.horizontalsystems.walletkit.entities.BiometryType
+//import io.horizontalsystems.walletkit.modules.RxBaseTest
 //import io.reactivex.Flowable
 //import org.junit.After
 //import org.junit.Assert.*

@@ -33,15 +33,46 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python .github/scripts/translate_strings.py
 
+      # Commit via the GraphQL createCommitOnBranch mutation instead of
+      # git push: commits created through the API are signed by GitHub
+      # and show as Verified.
       - name: Commit and push translations
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.head_ref }}
         run: |
-          git config user.name "translator[bot]"
-          git config user.email "translator[bot]@users.noreply.github.com"
-          find . -path '*/src/main/res/values-*/strings.xml' -exec git add {} +
-          git add translation_snapshot.json 2>/dev/null || true
-          if git diff --staged --quiet; then
+          files=$(git ls-files --modified --others --exclude-standard -- \
+            '*src/main/res/values-*/strings.xml' translation_snapshot.json)
+          if [ -z "$files" ]; then
             echo "No translation changes to commit."
-          else
-            git commit -m "Translate new strings"
-            git push
+            exit 0
           fi
+          # Pass file contents to jq via --rawfile/--slurpfile, never as
+          # command-line arguments: base64 of a large strings.xml exceeds
+          # the kernel's 128KB per-argument limit (MAX_ARG_STRLEN).
+          additions="$RUNNER_TEMP/additions.jsonl"
+          : > "$additions"
+          while IFS= read -r f; do
+            base64 -w0 "$f" > "$RUNNER_TEMP/file.b64"
+            jq -n --arg path "$f" --rawfile contents "$RUNNER_TEMP/file.b64" \
+              '{path: $path, contents: $contents}' >> "$additions"
+          done <<< "$files"
+          [ "$(jq -s length "$additions")" -eq "$(echo "$files" | wc -l)" ]
+          jq -n \
+            --arg repo "$GITHUB_REPOSITORY" \
+            --arg branch "$BRANCH" \
+            --arg oid "$(git rev-parse HEAD)" \
+            --slurpfile additions "$additions" \
+            '{
+              query: "mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }",
+              variables: {input: {
+                branch: {repositoryNameWithOwner: $repo, branchName: $branch},
+                expectedHeadOid: $oid,
+                message: {headline: "Translate new strings", body: "[skip ci]"},
+                fileChanges: {additions: $additions}
+              }}
+            }' > "$RUNNER_TEMP/commit_payload.json"
+          response=$(curl -sf -H "Authorization: bearer $GH_TOKEN" \
+            -d @"$RUNNER_TEMP/commit_payload.json" https://api.github.com/graphql)
+          echo "$response" | jq .
+          echo "$response" | jq -e '(.errors | not) and .data.createCommitOnBranch.commit.oid' > /dev/null

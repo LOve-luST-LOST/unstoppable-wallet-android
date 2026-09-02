@@ -1,0 +1,192 @@
+package io.horizontalsystems.walletkit.core.managers
+
+import io.horizontalsystems.walletkit.core.App
+import io.horizontalsystems.walletkit.core.BackgroundManager
+import io.horizontalsystems.walletkit.core.BackgroundManagerState
+import io.horizontalsystems.walletkit.core.UnsupportedAccountException
+import io.horizontalsystems.walletkit.entities.Account
+import io.horizontalsystems.walletkit.entities.AccountType
+import io.horizontalsystems.solanakit.Signer
+import io.horizontalsystems.solanakit.SolanaKit
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import timber.log.Timber
+
+class SolanaKitManager(
+    private val rpcSourceManager: SolanaRpcSourceManager,
+    private val walletManager: SolanaWalletManager,
+    private val backgroundManager: BackgroundManager
+) {
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private var backgroundEventListenerJob: Job? = null
+    private var rpcUpdatedJob: Job? = null
+    private var tokenAccountJob: Job? = null
+
+    var solanaKitWrapper: SolanaKitWrapper? = null
+
+    private var useCount = 0
+    var currentAccount: Account? = null
+        private set
+    private val _kitStoppedFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    val kitStoppedFlow: SharedFlow<Unit>
+        get() = _kitStoppedFlow.asSharedFlow()
+
+    val statusInfo: Map<String, Any>?
+        get() = solanaKitWrapper?.solanaKit?.statusInfo()
+
+    private fun handleUpdateNetwork() {
+        try {
+            stopKit()
+        } finally {
+            _kitStoppedFlow.tryEmit(Unit)
+        }
+    }
+
+    @Synchronized
+    fun getSolanaKitWrapper(account: Account): SolanaKitWrapper {
+        if (this.solanaKitWrapper != null && currentAccount != account) {
+            stopKit()
+        }
+
+        if (this.solanaKitWrapper == null) {
+            val accountType = account.type
+            this.solanaKitWrapper = when (accountType) {
+                is AccountType.Mnemonic -> {
+                    createKitInstanceFromMnemonic(accountType, account)
+                }
+
+                is AccountType.SolanaAddress -> {
+                    createKitInstanceFromAddress(accountType, account)
+                }
+
+                else -> throw UnsupportedAccountException()
+            }
+            startKit()
+            subscribeToEvents()
+            useCount = 0
+            currentAccount = account
+        }
+
+        useCount++
+        return this.solanaKitWrapper!!
+    }
+
+    private fun createKitInstanceFromMnemonic(
+        accountType: AccountType.Mnemonic,
+        account: Account
+    ): SolanaKitWrapper {
+        val seed = accountType.seed
+        val address = Signer.address(seed)
+        val signer = Signer.getInstance(seed)
+
+        val kit = SolanaKit.getInstance(
+            application = App.instance,
+            addressString = address,
+            rpcSource = rpcSourceManager.rpcSource,
+            walletId = account.id,
+        )
+
+        return SolanaKitWrapper(kit, signer)
+    }
+
+    private fun createKitInstanceFromAddress(
+        accountType: AccountType.SolanaAddress,
+        account: Account
+    ): SolanaKitWrapper {
+        val address = accountType.address
+
+        val kit = SolanaKit.getInstance(
+            application = App.instance,
+            addressString = address,
+            rpcSource = rpcSourceManager.rpcSource,
+            walletId = account.id,
+        )
+
+        return SolanaKitWrapper(kit, null)
+    }
+
+    @Synchronized
+    fun unlink(account: Account) {
+        if (account == currentAccount) {
+            useCount -= 1
+
+            if (useCount < 1) {
+                stopKit()
+            }
+        }
+    }
+
+    private fun stopKit() {
+        try {
+            solanaKitWrapper?.solanaKit?.stop()
+        } finally {
+            solanaKitWrapper = null
+            currentAccount = null
+            tokenAccountJob?.cancel()
+            backgroundEventListenerJob?.cancel()
+            rpcUpdatedJob?.cancel()
+        }
+    }
+
+    private fun startKit() {
+        solanaKitWrapper?.solanaKit?.let { kit ->
+            tokenAccountJob = coroutineScope.launch {
+                kit.start()
+                kit.fungibleTokenAccountsFlow.collect {
+                    walletManager.add(it)
+                }
+            }
+        }
+    }
+
+    private fun subscribeToEvents() {
+        backgroundEventListenerJob = coroutineScope.launch {
+            backgroundManager.stateFlow.collect { state ->
+                when (state) {
+                    BackgroundManagerState.EnterForeground -> {
+                        solanaKitWrapper?.solanaKit?.let { kit ->
+                            kit.resume()
+                            delay(1000)
+                            kit.refresh()
+                        }
+                    }
+
+                    BackgroundManagerState.EnterBackground -> {
+                        solanaKitWrapper?.solanaKit?.pause()
+                    }
+                }
+            }
+        }
+        rpcUpdatedJob = coroutineScope.launch {
+            rpcSourceManager.rpcSourceUpdateFlow.collect {
+                // a failed restart must not cancel the collector — later RPC
+                // source changes still need to be applied
+                try {
+                    handleUpdateNetwork()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "Restarting SolanaKit for new RPC source failed")
+                }
+            }
+        }
+    }
+
+    fun getAddress(accountType: AccountType) = when (accountType) {
+        is AccountType.Mnemonic -> Signer.address(accountType.seed)
+        is AccountType.SolanaAddress -> accountType.address
+        else -> throw UnsupportedAccountException()
+    }
+
+}
+
+class SolanaKitWrapper(val solanaKit: SolanaKit, val signer: Signer?)

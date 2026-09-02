@@ -4,10 +4,10 @@
 //import com.nhaarman.mockito_kotlin.verify
 //import com.nhaarman.mockito_kotlin.whenever
 //import io.horizontalsystems.bankwallet.R
-//import io.horizontalsystems.bankwallet.core.FeeRatePriority
-//import io.horizontalsystems.bankwallet.entities.Coin
-//import io.horizontalsystems.bankwallet.entities.PaymentRequestAddress
-//import io.horizontalsystems.bankwallet.entities.Rate
+//import io.horizontalsystems.walletkit.core.FeeRatePriority
+//import io.horizontalsystems.walletkit.entities.Coin
+//import io.horizontalsystems.walletkit.entities.PaymentRequestAddress
+//import io.horizontalsystems.walletkit.entities.Rate
 //import org.junit.Assert
 //import org.junit.Before
 //import org.junit.Test

@@ -1,18 +1,20 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.parcelize)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.compose)
-}
+    alias(libs.plugins.kotlin.compose) // MainActivity hosts the Compose nav entry
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
+    // Optional, provides the @Serialize annotation for autogeneration of Serializers.
+    alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
+}
+
+// buildConfigField expects a Java expression, so plain strings need embedded quotes
+fun com.android.build.api.dsl.VariantDimension.buildConfigFieldString(name: String, value: String) {
+    buildConfigField("String", name, "\"$value\"")
 }
 
 android {
@@ -23,26 +25,26 @@ android {
         applicationId = "io.horizontalsystems.bankwallet"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.compileSdk.get().toInt()
-        versionCode = 174
-        versionName = "0.49.3"
+        versionCode = 177
+        versionName = "0.50.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         resourceConfigurations += listOf("de", "es", "en", "fa", "fr", "ko", "pt", "pt-rBR", "ru", "tr", "zh")
 
         vectorDrawables.useSupportLibrary = true
 
-        resValue("string", "companyWebPageLink", "https://horizontalsystems.io")
-        resValue("string", "appWebPageLink", "https://unstoppable.money")
-        resValue("string", "analyticsLink", "https://unstoppable.money/analytics")
-        resValue("string", "appGithubLink", "https://github.com/horizontalsystems/unstoppable-wallet-android")
-        resValue("string", "appTwitterLink", "https://twitter.com/UnstoppableByHS")
-        resValue("string", "appTelegramLink", "https://t.me/unstoppable_announcements")
-        resValue("string", "reportEmail", "support.unstoppable@protonmail.com")
-        resValue("string", "releaseNotesUrl", "https://api.github.com/repos/horizontalsystems/unstoppable-wallet-android/releases/tags/")
-        resValue("string", "walletConnectAppMetaDataName", "Unstoppable")
-        resValue("string", "walletConnectAppMetaDataUrl", "unstoppable.money")
-        resValue("string", "walletConnectAppMetaDataIcon", "https://raw.githubusercontent.com/horizontalsystems/HS-Design/master/PressKit/UW-AppIcon-on-light.png")
-        resValue("string", "accountsBackupFileSalt", "unstoppable")
+        buildConfigFieldString("COMPANY_WEB_PAGE_LINK", "https://horizontalsystems.io")
+        buildConfigFieldString("APP_WEB_PAGE_LINK", "https://unstoppable.money")
+        buildConfigFieldString("ANALYTICS_LINK", "https://unstoppable.money/analytics")
+        buildConfigFieldString("APP_GITHUB_LINK", "https://github.com/horizontalsystems/unstoppable-wallet-android")
+        buildConfigFieldString("APP_TWITTER_LINK", "https://twitter.com/UnstoppableByHS")
+        buildConfigFieldString("APP_TELEGRAM_LINK", "https://t.me/unstoppable_announcements")
+        buildConfigFieldString("REPORT_EMAIL", "support.unstoppable@protonmail.com")
+        buildConfigFieldString("RELEASE_NOTES_URL", "https://api.github.com/repos/horizontalsystems/unstoppable-wallet-android/releases/tags/")
+        buildConfigFieldString("WALLET_CONNECT_APP_META_DATA_NAME", "Unstoppable")
+        buildConfigFieldString("WALLET_CONNECT_APP_META_DATA_URL", "unstoppable.money")
+        buildConfigFieldString("WALLET_CONNECT_APP_META_DATA_ICON", "https://raw.githubusercontent.com/horizontalsystems/HS-Design/master/PressKit/UW-AppIcon-on-light.png")
+        buildConfigFieldString("THORCHAIN_API_KEY", "THORCHAIN_APIJ4R0S3UWZI8GEXTQ")
 
         buildConfigField("boolean", "FDROID_BUILD", "false")
 
@@ -53,7 +55,6 @@ android {
 
     buildFeatures {
         compose = true
-        viewBinding = true
         buildConfig = true
     }
 
@@ -76,15 +77,15 @@ android {
     productFlavors {
         create("base") {
             dimension = "distribution"
-            resValue("string", "uswapApiKey", uswapApiKeyAndroid)
-            resValue("string", "oneInchPartnerFeeAddress", oneInchFeeAddressAndroid)
+            buildConfigFieldString("USWAP_API_KEY", uswapApiKeyAndroid)
+            buildConfigFieldString("ONE_INCH_PARTNER_FEE_ADDRESS", oneInchFeeAddressAndroid)
         }
 
         create("fdroid") {
             dimension = "distribution"
             buildConfigField("boolean", "FDROID_BUILD", "true")
-            resValue("string", "uswapApiKey", uswapApiKeyFdroid)
-            resValue("string", "oneInchPartnerFeeAddress", oneInchFeeAddressFdroid)
+            buildConfigFieldString("USWAP_API_KEY", uswapApiKeyFdroid)
+            buildConfigFieldString("ONE_INCH_PARTNER_FEE_ADDRESS", oneInchFeeAddressFdroid)
         }
 
         create("fdroidCi") {
@@ -92,8 +93,8 @@ android {
             applicationIdSuffix = ".fdroidci"
             buildConfigField("boolean", "FDROID_BUILD", "true")
             signingConfig = signingConfigs.getByName("test")
-            resValue("string", "uswapApiKey", uswapApiKeyFdroid)
-            resValue("string", "oneInchPartnerFeeAddress", oneInchFeeAddressFdroid)
+            buildConfigFieldString("USWAP_API_KEY", uswapApiKeyFdroid)
+            buildConfigFieldString("ONE_INCH_PARTNER_FEE_ADDRESS", oneInchFeeAddressFdroid)
         }
 
         create("ci") {
@@ -101,9 +102,10 @@ android {
             applicationIdSuffix = ".appcenter"
             versionCode = System.getenv("BUILD_NUMBER")?.toIntOrNull() ?: defaultConfig.versionCode
             signingConfig = signingConfigs.getByName("test")
-            resValue("string", "appLinksHost", "dev.unstoppable.money")
-            resValue("string", "uswapApiKey", uswapApiKeyAndroid)
-            resValue("string", "oneInchPartnerFeeAddress", oneInchFeeAddressAndroid)
+            buildConfigFieldString("APP_LINKS_HOST", "dev.unstoppable.money")
+            manifestPlaceholders["appLinksHost"] = "dev.unstoppable.money"
+            buildConfigFieldString("USWAP_API_KEY", uswapApiKeyAndroid)
+            buildConfigFieldString("ONE_INCH_PARTNER_FEE_ADDRESS", oneInchFeeAddressAndroid)
         }
     }
 
@@ -113,64 +115,66 @@ android {
             isDebuggable = true
             isMinifyEnabled = false
             applicationIdSuffix = ".dev"
-            resValue("string", "appLinksHost", "dev.unstoppable.money")
-            resValue("string", "twitterBearerToken", "AAAAAAAAAAAAAAAAAAAAAJgeNwEAAAAA6xVpR6xLKTrxIA3kkSyRA92LDpA%3Da6auybDwcymUyh2BcS6zZwicUdxGtrzJC0qvOSdRwKLeqBGhwB")
-            resValue("string", "etherscanKey", "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE")
-            resValue("string", "bscscanKey", "R396MSJNCKX2YK4EIMP3EWYAW21NSVMXRN")
-            resValue("string", "otherScanKey", "FU7CYEXQEUSMXJJF8MZR6BNRMP9XT8S9CP")
-            resValue("string", "is_release", "false")
-            resValue("string", "guidesUrl", "https://raw.githubusercontent.com/horizontalsystems/blockchain-crypto-guides/v1.2/index.json")
-            resValue("string", "eduUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/refs/tags/v1.4/src/edu.json")
-            resValue("string", "faqUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/master/src/faq.json")
-            resValue("string", "coinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/coins.json")
-            resValue("string", "providerCoinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/provider.coins.json")
-            resValue("string", "marketApiBaseUrl", "https://api-dev.blocksdecoded.com")
-            resValue("string", "marketApiKey", "IQf1uAjkthZp1i2pYzkXFDom")
-            resValue("string", "openSeaApiKey", "bfbd6061a33e455c8581b594774fecb3")
-            resValue("string", "walletConnectV2Key", "8b4f41c60880a3e3ad57d82fddb30568")
-            resValue("string", "solanaAlchemyApiKey", "PKgWxOMarrHgyMESGjIkJ,BOlzgqJUeGYe5E7K613Fm")
-            resValue("string", "solanaJupiterApiKey", "ec901a97-0375-45b1-8b7d-da1ea9934cb0")
-            resValue("string", "trongridApiKeys", "33374494-8060-447e-8367-90c5efd4ed95")
-            resValue("string", "udnApiKey", "r2phzgatt_zt9-hd_wyvdjrdsrimnxgokm7knyag1malzgcz")
-            resValue("string", "oneInchApiKey", "3EttyCzgWb2GLFIRoPIUYM0M4uKAVEcq")
-            resValue("string", "blocksDecodedEthereumRpc", "https://api-dev.blocksdecoded.com/v1/ethereum-rpc/mainnet")
-            resValue("string", "chainalysisBaseUrl", "https://public.chainalysis.com/api/v1/")
-            resValue("string", "chainalysisApiKey", "928bb256db73f1cb93e1b3366a145d9fbe06e28581c8b665b82ad70bbfef1db4")
-            resValue("string", "hashDitBaseUrl", "https://service.hashdit.io/v2/hashdit/")
-            resValue("string", "hashDitApiKey", "aGMkgODYiUFtTYrSRcEZsIfPHeASOlGYXClJZNWF")
-            resValue("string", "uswapApiBaseUrl", "https://swap-dev.unstoppable.money/api/v2/")
+            buildConfigFieldString("APP_LINKS_HOST", "dev.unstoppable.money")
+            manifestPlaceholders["appLinksHost"] = "dev.unstoppable.money"
+            buildConfigFieldString("TWITTER_BEARER_TOKEN", "AAAAAAAAAAAAAAAAAAAAAJgeNwEAAAAA6xVpR6xLKTrxIA3kkSyRA92LDpA%3Da6auybDwcymUyh2BcS6zZwicUdxGtrzJC0qvOSdRwKLeqBGhwB")
+            buildConfigFieldString("ETHERSCAN_KEY", "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE")
+            buildConfigFieldString("BSCSCAN_KEY", "R396MSJNCKX2YK4EIMP3EWYAW21NSVMXRN")
+            buildConfigFieldString("OTHER_SCAN_KEY", "FU7CYEXQEUSMXJJF8MZR6BNRMP9XT8S9CP")
+            buildConfigFieldString("GUIDES_URL", "https://raw.githubusercontent.com/horizontalsystems/blockchain-crypto-guides/v1.2/index.json")
+            buildConfigFieldString("EDU_URL", "https://raw.githubusercontent.com/horizontalsystems/unstoppable.money/refs/heads/main/edu.json")
+            buildConfigFieldString("FAQ_URL", "https://raw.githubusercontent.com/horizontalsystems/unstoppable.money/refs/heads/main/faq.json")
+            buildConfigFieldString("COINS_JSON_URL", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/coins.json")
+            buildConfigFieldString("PROVIDER_COINS_JSON_URL", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/provider.coins.json")
+            buildConfigFieldString("MARKET_API_BASE_URL", "https://api-dev.blocksdecoded.com")
+            buildConfigFieldString("MARKET_API_KEY", "IQf1uAjkthZp1i2pYzkXFDom")
+            buildConfigFieldString("OPEN_SEA_API_KEY", "bfbd6061a33e455c8581b594774fecb3")
+            buildConfigFieldString("WALLET_CONNECT_V2_KEY", "8b4f41c60880a3e3ad57d82fddb30568")
+            buildConfigFieldString("SOLANA_ALCHEMY_API_KEY", "PKgWxOMarrHgyMESGjIkJ,BOlzgqJUeGYe5E7K613Fm")
+            buildConfigFieldString("SOLANA_JUPITER_API_KEY", "ec901a97-0375-45b1-8b7d-da1ea9934cb0")
+            buildConfigFieldString("TRONGRID_API_KEYS", "33374494-8060-447e-8367-90c5efd4ed95")
+            buildConfigFieldString("UDN_API_KEY", "r2phzgatt_zt9-hd_wyvdjrdsrimnxgokm7knyag1malzgcz")
+            buildConfigFieldString("ONE_INCH_API_KEY", "3EttyCzgWb2GLFIRoPIUYM0M4uKAVEcq")
+            buildConfigFieldString("BLOCKS_DECODED_ETHEREUM_RPC", "https://api-dev.blocksdecoded.com/v1/ethereum-rpc/mainnet")
+            buildConfigFieldString("CHAINALYSIS_BASE_URL", "https://public.chainalysis.com/api/v1/")
+            buildConfigFieldString("CHAINALYSIS_API_KEY", "928bb256db73f1cb93e1b3366a145d9fbe06e28581c8b665b82ad70bbfef1db4")
+            buildConfigFieldString("HASH_DIT_BASE_URL", "https://service.hashdit.io/v2/hashdit/")
+            buildConfigFieldString("HASH_DIT_API_KEY", "aGMkgODYiUFtTYrSRcEZsIfPHeASOlGYXClJZNWF")
+            buildConfigFieldString("USWAP_API_BASE_URL", "https://swap-dev.unstoppable.money/api/v2/")
+            buildConfigField("int", "SWAP_FEE_BPS", "25")
         }
 
         release {
             isDebuggable = false
             isMinifyEnabled = false
             isShrinkResources = false
-            resValue("string", "appLinksHost", "unstoppable.money")
-            resValue("string", "twitterBearerToken", "AAAAAAAAAAAAAAAAAAAAAJgeNwEAAAAA6xVpR6xLKTrxIA3kkSyRA92LDpA%3Da6auybDwcymUyh2BcS6zZwicUdxGtrzJC0qvOSdRwKLeqBGhwB")
-            resValue("string", "etherscanKey", "IEXTB9RE7MUV2UQ9X238RP146IEJB1J5HS,27S4V3GYJGMCPWQZ2T4SF9355QBQYQ3FI7,YK4KEA3TANM8KZ5J6E2Q1ZIM6YDM8TEABM,FU7CYEXQEUSMXJJF8MZR6BNRMP9XT8S9CP")
-            resValue("string", "bscscanKey", "FQ2HSNNEHVG71U96P1TF3WF9RTF6AF5MRA,G6K8VZDWYSJHTCRURRITFZ2ZWV48GRGTZQ,R396MSJNCKX2YK4EIMP3EWYAW21NSVMXRN,8QW2JNMPHPUPAACFGXZ3A5PVQY6PBCJPEG")
-            resValue("string", "otherScanKey", "Y855XHV4XKUC9DTRM2ZQG8XAQ96EJV221Q,43DEJEEMA1P81YAU555A1TECRY5FPIWCFH")
-            resValue("string", "is_release", "true")
-            resValue("string", "guidesUrl", "https://raw.githubusercontent.com/horizontalsystems/blockchain-crypto-guides/v1.2/index.json")
-            resValue("string", "eduUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/refs/tags/v1.4/src/edu.json")
-            resValue("string", "faqUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/v1.3/src/faq.json")
-            resValue("string", "coinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/v0.21/coins.json")
-            resValue("string", "providerCoinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/v0.21/provider.coins.json")
-            resValue("string", "marketApiBaseUrl", "https://api.blocksdecoded.com")
-            resValue("string", "marketApiKey", "IQf1uAjkthZp1i2pYzkXFDom")
-            resValue("string", "openSeaApiKey", "bfbd6061a33e455c8581b594774fecb3")
-            resValue("string", "walletConnectV2Key", "0c5ca155c2f165a7d0c88686f2113a72")
-            resValue("string", "solanaAlchemyApiKey", "BOlzgqJUeGYe5E7K613Fm,Vmt7ucAGIMEux_c43Qqqf,uCordWq3EOD800awDx1kb,1uAryzn6DOEVs5PIugeoR,PKgWxOMarrHgyMESGjIkJ")
-            resValue("string", "solanaJupiterApiKey", "ec901a97-0375-45b1-8b7d-da1ea9934cb0")
-            resValue("string", "trongridApiKeys", "8f5ae2c8-8012-42a8-b0ca-ffc2741f6a29,578aa64f-a79f-4ee8-86e9-e9860e2d050a,1e92f1fc-41f8-401f-a7f6-5b719b6f1280,d1511874-1547-48df-9536-a32cc85949ac")
-            resValue("string", "udnApiKey", "r2phzgatt_zt9-hd_wyvdjrdsrimnxgokm7knyag1malzgcz")
-            resValue("string", "oneInchApiKey", "3EttyCzgWb2GLFIRoPIUYM0M4uKAVEcq")
-            resValue("string", "blocksDecodedEthereumRpc", "https://api.blocksdecoded.com/v1/ethereum-rpc/mainnet")
-            resValue("string", "chainalysisBaseUrl", "https://public.chainalysis.com/api/v1/")
-            resValue("string", "chainalysisApiKey", "928bb256db73f1cb93e1b3366a145d9fbe06e28581c8b665b82ad70bbfef1db4")
-            resValue("string", "hashDitBaseUrl", "https://service.hashdit.io/v2/hashdit/")
-            resValue("string", "hashDitApiKey", "aGMkgODYiUFtTYrSRcEZsIfPHeASOlGYXClJZNWF")
-            resValue("string", "uswapApiBaseUrl", "https://swap-api.unstoppable.money/v2/")
+            buildConfigFieldString("APP_LINKS_HOST", "unstoppable.money")
+            manifestPlaceholders["appLinksHost"] = "unstoppable.money"
+            buildConfigFieldString("TWITTER_BEARER_TOKEN", "AAAAAAAAAAAAAAAAAAAAAJgeNwEAAAAA6xVpR6xLKTrxIA3kkSyRA92LDpA%3Da6auybDwcymUyh2BcS6zZwicUdxGtrzJC0qvOSdRwKLeqBGhwB")
+            buildConfigFieldString("ETHERSCAN_KEY", "IEXTB9RE7MUV2UQ9X238RP146IEJB1J5HS,27S4V3GYJGMCPWQZ2T4SF9355QBQYQ3FI7,YK4KEA3TANM8KZ5J6E2Q1ZIM6YDM8TEABM,FU7CYEXQEUSMXJJF8MZR6BNRMP9XT8S9CP")
+            buildConfigFieldString("BSCSCAN_KEY", "FQ2HSNNEHVG71U96P1TF3WF9RTF6AF5MRA,G6K8VZDWYSJHTCRURRITFZ2ZWV48GRGTZQ,R396MSJNCKX2YK4EIMP3EWYAW21NSVMXRN,8QW2JNMPHPUPAACFGXZ3A5PVQY6PBCJPEG")
+            buildConfigFieldString("OTHER_SCAN_KEY", "Y855XHV4XKUC9DTRM2ZQG8XAQ96EJV221Q,43DEJEEMA1P81YAU555A1TECRY5FPIWCFH")
+            buildConfigFieldString("GUIDES_URL", "https://raw.githubusercontent.com/horizontalsystems/blockchain-crypto-guides/v1.2/index.json")
+            buildConfigFieldString("EDU_URL", "https://raw.githubusercontent.com/horizontalsystems/unstoppable.money/refs/heads/main/edu.json")
+            buildConfigFieldString("FAQ_URL", "https://raw.githubusercontent.com/horizontalsystems/unstoppable.money/refs/heads/main/faq.json")
+            buildConfigFieldString("COINS_JSON_URL", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/v0.21/coins.json")
+            buildConfigFieldString("PROVIDER_COINS_JSON_URL", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/v0.21/provider.coins.json")
+            buildConfigFieldString("MARKET_API_BASE_URL", "https://api.blocksdecoded.com")
+            buildConfigFieldString("MARKET_API_KEY", "IQf1uAjkthZp1i2pYzkXFDom")
+            buildConfigFieldString("OPEN_SEA_API_KEY", "bfbd6061a33e455c8581b594774fecb3")
+            buildConfigFieldString("WALLET_CONNECT_V2_KEY", "0c5ca155c2f165a7d0c88686f2113a72")
+            buildConfigFieldString("SOLANA_ALCHEMY_API_KEY", "BOlzgqJUeGYe5E7K613Fm,Vmt7ucAGIMEux_c43Qqqf,uCordWq3EOD800awDx1kb,1uAryzn6DOEVs5PIugeoR,PKgWxOMarrHgyMESGjIkJ")
+            buildConfigFieldString("SOLANA_JUPITER_API_KEY", "ec901a97-0375-45b1-8b7d-da1ea9934cb0")
+            buildConfigFieldString("TRONGRID_API_KEYS", "8f5ae2c8-8012-42a8-b0ca-ffc2741f6a29,578aa64f-a79f-4ee8-86e9-e9860e2d050a,1e92f1fc-41f8-401f-a7f6-5b719b6f1280,d1511874-1547-48df-9536-a32cc85949ac")
+            buildConfigFieldString("UDN_API_KEY", "r2phzgatt_zt9-hd_wyvdjrdsrimnxgokm7knyag1malzgcz")
+            buildConfigFieldString("ONE_INCH_API_KEY", "3EttyCzgWb2GLFIRoPIUYM0M4uKAVEcq")
+            buildConfigFieldString("BLOCKS_DECODED_ETHEREUM_RPC", "https://api.blocksdecoded.com/v1/ethereum-rpc/mainnet")
+            buildConfigFieldString("CHAINALYSIS_BASE_URL", "https://public.chainalysis.com/api/v1/")
+            buildConfigFieldString("CHAINALYSIS_API_KEY", "928bb256db73f1cb93e1b3366a145d9fbe06e28581c8b665b82ad70bbfef1db4")
+            buildConfigFieldString("HASH_DIT_BASE_URL", "https://service.hashdit.io/v2/hashdit/")
+            buildConfigFieldString("HASH_DIT_API_KEY", "aGMkgODYiUFtTYrSRcEZsIfPHeASOlGYXClJZNWF")
+            buildConfigFieldString("USWAP_API_BASE_URL", "https://swap-api.unstoppable.money/v2/")
+            buildConfigField("int", "SWAP_FEE_BPS", "100")
         }
     }
 
@@ -234,121 +238,20 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
-    // AndroidX Core
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.fragment.ktx)
-    implementation(libs.androidx.preference.ktx)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.swiperefreshlayout)
-    implementation(libs.androidx.splashscreen)
-    implementation(libs.androidx.glance.appwidget)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.browser)
-    implementation(libs.androidx.biometric)
-    implementation(libs.androidx.credentials)
-
-    // Lifecycle
-    implementation(libs.androidx.lifecycle.extensions)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.common.java8)
-    implementation(libs.androidx.lifecycle.reactivestreams.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-
-    // Navigation
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.androidx.navigation.compose)
-
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.rxjava2)
-    ksp(libs.androidx.room.compiler)
-
-    // WorkManager
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.work.rxjava2)
-
-    // Compose
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.material)
-    implementation(libs.androidx.compose.animation)
-    implementation(libs.androidx.compose.ui.tooling)
-    implementation(libs.androidx.compose.runtime.livedata)
-    implementation(libs.androidx.compose.material3)
-
-    // Google Material
-    implementation(libs.google.material)
-
-    // Accompanist
-    implementation(libs.accompanist.navigation.animation)
-    implementation(libs.accompanist.appcompat.theme)
-    implementation(libs.accompanist.flowlayout)
-    implementation(libs.accompanist.permissions)
-
-    // Networking
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.adapter.rxjava2)
-    implementation(libs.retrofit.converter.gson)
-    implementation(libs.retrofit.converter.scalars)
-    implementation(libs.okhttp.logging)
-    implementation(libs.gson)
-
-    // Rx
-    implementation(libs.rxjava)
-    implementation(libs.rxandroid)
-
-    // Coroutines
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.rx2)
-
-    // Image loading
-    implementation(libs.coil.compose)
-    implementation(libs.coil.svg)
-    implementation(libs.coil.gif)
-
-    // Logging
-    implementation(libs.timber)
+    // Everything else now lives in :walletkit, which re-exports its dependencies (api),
+    // so the thin :app shell only needs :walletkit plus the flavor/test bits below.
+    implementation(project(":walletkit"))
+    implementation(project(":walletkit-chain-zano"))
+    implementation(project(":walletkit-chain-monero"))
+    implementation(project(":walletkit-chain-zcash"))
+    implementation(project(":walletkit-chain-solana"))
+    implementation(project(":walletkit-chain-stellar"))
+    implementation(project(":walletkit-chain-ton"))
+    implementation(project(":walletkit-chain-thorchain"))
+    implementation(project(":walletkit-chain-bitcoin"))
+    implementation(project(":walletkit-chain-evm"))
+    implementation(libs.androidx.splashscreen) // MainActivity installs the splash screen
     debugImplementation(libs.leakcanary)
-
-    // Markdown
-    implementation(libs.commonmark)
-    implementation(libs.markwon)
-
-    // QR
-    api(libs.zxing)
-    implementation(libs.qrose)
-
-    // Web3
-    implementation(libs.web3j)
-    implementation(libs.unstoppable.domains)
-
-    // Wallet Kits
-    implementation(libs.kit.monero)
-    implementation(libs.kit.zano)
-    implementation(libs.kit.stellar)
-    implementation(libs.kit.ton)
-    implementation(libs.kit.bitcoin)
-    implementation(libs.kit.ethereum)
-    implementation(libs.kit.fee.rate)
-    implementation(libs.kit.market)
-    implementation(libs.kit.solana)
-    implementation(libs.kit.tron)
-    implementation(libs.zcash.android.sdk)
-
-    // BouncyCastle
-    implementation(libs.bouncycastle)
-
-    // Binance
-    implementation(libs.binance.connector) {
-        exclude(group = "org.bouncycastle", module = "bcprov-jdk18on")
-    }
 
     // Desugar
     coreLibraryDesugaring(libs.desugar.jdk.libs)
@@ -359,24 +262,6 @@ dependencies {
         exclude(group = "org.bouncycastle", module = "bcutil-jdk18on")
     }
 
-    // Tor
-    implementation(libs.tor.android)
-    implementation(libs.jtorctl)
-
-    // Utils
-    implementation(libs.circleindicator)
-    implementation(libs.twitter.text)
-    api(libs.android.shell)
-    api(libs.portmapper)
-
-    // UI modules
-    implementation(project(":core"))
-    implementation(project(":components:icons"))
-    implementation(project(":components:chartview"))
-
-    implementation(project(":subscriptions-core"))
-    implementation(project(":dapp-core"))
-
     // UI Tests
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.test.runner)
@@ -384,6 +269,7 @@ dependencies {
 
     // Unit Tests
     testImplementation(libs.junit)
+    testImplementation(libs.classgraph)
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.mockito)
     testImplementation(libs.mockito.kotlin)
@@ -429,4 +315,13 @@ configurations.all {
         force("io.ktor:ktor-io:2.3.7")
         force("io.ktor:ktor-client-core:2.3.7")
     }
+}
+
+// Forward -PupdateParityFixture=true to the test JVM so ChainBehaviorParityTest can
+// regenerate its golden fixture (see walletkit/docs/Walletkit-Modularization-Plan.md).
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "updateParityFixture",
+        providers.gradleProperty("updateParityFixture").getOrElse("false")
+    )
 }

@@ -1,0 +1,15 @@
+appId: ${APP_ID || 'io.horizontalsystems.bankwallet.dev'}
+env:
+  # Public BIP39 test vector. Override: maestro test -e MNEMONIC="..."
+  MNEMONIC: "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+---
+# Fresh install: restore a wallet from a recovery phrase
+- launchApp:
+    clearState: true
+- runFlow: ../subflows/restore_wallet_from_phrase.yaml
+
+# Wallet is restored: balance screen with the restored coins
+- assertVisible: "Receive"
+- assertVisible: "Send"
+- assertVisible: "BTC"
+- assertVisible: "ETH"

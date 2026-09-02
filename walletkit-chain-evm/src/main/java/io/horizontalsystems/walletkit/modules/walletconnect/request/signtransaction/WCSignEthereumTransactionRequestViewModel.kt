@@ -1,0 +1,167 @@
+package io.horizontalsystems.walletkit.modules.walletconnect.request.signtransaction
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import io.horizontalsystems.walletkit.core.managers.EvmKitManagerRegistry
+import io.horizontalsystems.walletkit.core.App
+import io.horizontalsystems.walletkit.core.ViewModelUiState
+import io.horizontalsystems.walletkit.core.ethereum.CautionViewItem
+import io.horizontalsystems.walletkit.core.ethereum.EvmCoinService
+import io.horizontalsystems.walletkit.core.ethereum.EvmCoinServiceFactory
+import io.horizontalsystems.walletkit.core.managers.EvmKitWrapper
+import io.horizontalsystems.walletkit.core.toHexString
+import io.horizontalsystems.walletkit.modules.evmfee.GasData
+import io.horizontalsystems.walletkit.modules.multiswap.ui.DataField
+import io.horizontalsystems.walletkit.modules.multiswap.ui.DataFieldNonce
+import io.horizontalsystems.walletkit.modules.send.SendModule
+import io.horizontalsystems.walletkit.modules.sendevmtransaction.SectionViewItem
+import io.horizontalsystems.walletkit.modules.sendevmtransaction.SendEvmTransactionViewItemFactory
+import io.horizontalsystems.walletkit.modules.walletconnect.WCDelegate
+import io.horizontalsystems.walletkit.modules.walletconnect.WCSessionManager
+import io.horizontalsystems.walletkit.modules.walletconnect.request.sendtransaction.WalletConnectTransaction
+import io.horizontalsystems.ethereumkit.models.TransactionData
+import io.horizontalsystems.marketkit.models.BlockchainType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+
+class WCSignEthereumTransactionRequestViewModel(
+    private val evmKit: EvmKitWrapper,
+    baseCoinService: EvmCoinService,
+    private val sendEvmTransactionViewItemFactory: SendEvmTransactionViewItemFactory,
+    private val dAppName: String,
+    transaction: WalletConnectTransaction,
+    // Captured at construction: WCDelegate.sessionRequestEvent is mutable and can be replaced by
+    // a newer request while this sheet is open, so the response must target the displayed request.
+    private val requestId: Long,
+    private val topic: String,
+) : ViewModelUiState<WCSignEthereumTransactionRequestUiState>() {
+
+    private val transactionData = TransactionData(
+        transaction.to,
+        transaction.value,
+        transaction.data
+    )
+
+    private var gasData: GasData? = null
+    private var nonce: Long? = null
+    private var feeAmountData: SendModule.AmountData?
+    private var fields: List<DataField>
+
+    init {
+        val gasPrice = transaction.getGasPriceObj()
+        val gasLimit = transaction.gasLimit
+
+        feeAmountData = if (gasPrice != null && gasLimit != null) {
+            GasData(gasLimit = gasLimit, gasPrice = gasPrice).let {
+                gasData = it
+                baseCoinService.amountData(
+                    it.estimatedFee,
+                    it.isSurcharged
+                )
+            }
+        } else {
+            null
+        }
+
+        val txNonce = transaction.nonce
+        nonce = txNonce
+
+        fields = if (txNonce != null) {
+            listOf(DataFieldNonce(txNonce))
+        } else {
+            emptyList()
+        }
+    }
+
+    override fun createState() = WCSignEthereumTransactionRequestUiState(
+        networkFee = feeAmountData,
+        cautions = emptyList(),
+        transactionFields = fields,
+        sectionViewItems = getSectionViewItems()
+    )
+
+    private fun getSectionViewItems(): List<SectionViewItem> {
+        val items = sendEvmTransactionViewItemFactory.getItems(
+            transactionData,
+            null,
+            evmKit.evmKit.decorate(transactionData)
+        )
+
+        return items
+    }
+
+    // NonCancellable: the caller is a UI-scoped coroutine that dies with the composition (locking
+    // the app tears the sheet down mid-flight). The body has no suspension points today, but that
+    // atomicity is incidental — keep sign-and-respond explicitly uninterruptible once confirmed.
+    suspend fun sign() = withContext(Dispatchers.Default + NonCancellable) {
+        val signer = evmKit.signer ?: throw WCSessionManager.RequestDataError.NoSigner
+        val gasData = gasData ?: throw WCSessionManager.RequestDataError.InvalidGasPrice
+        val nonce = nonce ?: throw WCSessionManager.RequestDataError.InvalidNonce
+
+        val signature = signer.signedTransaction(
+            address = transactionData.to,
+            value = transactionData.value,
+            transactionInput = transactionData.input,
+            gasPrice = gasData.gasPrice,
+            gasLimit = gasData.gasLimit,
+            nonce = nonce
+        )
+
+        WCDelegate.respondPendingRequest(requestId, topic, signature.toHexString())
+    }
+
+    fun reject(topic: String, requestId: Long) {
+        // Clear the active request pointer synchronously (guarded by the displayed request id).
+        // rejectRequest() only nulls it in its async onSuccess, but the sheet closes immediately and
+        // reEmitPendingWcEventIfNeeded() would otherwise re-open the same request while it's still
+        // non-null. Use the displayed request id so a newer active request is not wiped.
+        WCDelegate.discardActiveSessionRequest(requestId)
+        WCDelegate.rejectRequest(topic, requestId)
+    }
+
+    class Factory(
+        private val blockchainType: BlockchainType,
+        private val transaction: WalletConnectTransaction,
+        private val peerName: String,
+        private val requestId: Long,
+        private val topic: String,
+    ) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            val token = App.evmBlockchainManager.getBaseToken(blockchainType)!!
+            val evmKitWrapper = EvmKitManagerRegistry.getEvmKitManager(blockchainType).evmKitWrapper!!
+            val coinServiceFactory = EvmCoinServiceFactory(
+                token,
+                App.marketKit,
+                App.currencyManager,
+                App.coinManager
+            )
+
+            val sendEvmTransactionViewItemFactory = SendEvmTransactionViewItemFactory(
+                App.evmLabelManager,
+                coinServiceFactory,
+                App.contactsRepository,
+                blockchainType
+            )
+
+
+            return WCSignEthereumTransactionRequestViewModel(
+                evmKitWrapper,
+                coinServiceFactory.baseCoinService,
+                sendEvmTransactionViewItemFactory,
+                peerName,
+                transaction,
+                requestId,
+                topic
+            ) as T
+        }
+    }
+}
+
+data class WCSignEthereumTransactionRequestUiState(
+    val networkFee: SendModule.AmountData?,
+    val cautions: List<CautionViewItem>,
+    val transactionFields: List<DataField>,
+    val sectionViewItems: List<SectionViewItem>
+)

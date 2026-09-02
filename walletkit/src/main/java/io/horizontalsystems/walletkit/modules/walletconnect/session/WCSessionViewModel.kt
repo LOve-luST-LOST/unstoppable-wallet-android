@@ -1,0 +1,584 @@
+package io.horizontalsystems.walletkit.modules.walletconnect.session
+
+import androidx.lifecycle.viewModelScope
+import io.horizontalsystems.walletkit.R
+import io.horizontalsystems.walletkit.SingleLiveEvent
+import io.horizontalsystems.walletkit.core.App
+import io.horizontalsystems.walletkit.core.INetworkManager
+import io.horizontalsystems.walletkit.core.ViewModelUiState
+import io.horizontalsystems.walletkit.core.managers.ConnectivityManager
+import io.horizontalsystems.walletkit.core.managers.PaidActionSettingsManager
+import io.horizontalsystems.walletkit.core.managers.ServiceWCWhitelist
+import io.horizontalsystems.walletkit.core.providers.IAppConfigProvider
+import io.horizontalsystems.walletkit.core.providers.Translator
+import io.horizontalsystems.walletkit.entities.Account
+import io.horizontalsystems.walletkit.modules.walletconnect.WCDelegate
+import io.horizontalsystems.walletkit.modules.walletconnect.WCManager
+import io.horizontalsystems.walletkit.modules.walletconnect.WCSessionManager
+import io.horizontalsystems.walletkit.modules.walletconnect.WCSessionManager.RequestDataError.NoSuitableAccount
+import io.horizontalsystems.walletkit.modules.walletconnect.WCSessionManager.RequestDataError.NoSuitableEvmKit
+import io.horizontalsystems.walletkit.modules.walletconnect.WCSessionManager.RequestDataError.RequestNotFoundError
+import io.horizontalsystems.walletkit.modules.walletconnect.WCSessionManager.RequestDataError.UnsupportedChainId
+import io.horizontalsystems.walletkit.modules.walletconnect.session.WCSessionServiceState.Invalid
+import io.horizontalsystems.walletkit.modules.walletconnect.session.WCSessionServiceState.Killed
+import io.horizontalsystems.walletkit.modules.walletconnect.session.WCSessionServiceState.Ready
+import io.horizontalsystems.walletkit.modules.walletconnect.session.WCSessionServiceState.WaitingForApproveSession
+import io.horizontalsystems.dapp.core.DAppManager
+import io.horizontalsystems.dapp.core.HSDAppEvent
+import io.horizontalsystems.dapp.core.HSDAppProposal
+import io.horizontalsystems.dapp.core.HSDAppRequest
+import io.horizontalsystems.dapp.core.HSDAppSession
+import io.horizontalsystems.dapp.core.HSDAppVerification
+import io.horizontalsystems.marketkit.models.BlockchainType
+import io.horizontalsystems.subscriptions.core.ScamProtection
+import io.horizontalsystems.subscriptions.core.UserSubscriptionManager
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.net.URL
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+
+class WCSessionViewModel(
+    private val sessionManager: WCSessionManager,
+    private val connectivityManager: ConnectivityManager,
+    private val account: Account?,
+    private val topic: String?,
+    private val wcManager: WCManager,
+    private val networkManager: INetworkManager,
+    appConfigProvider: IAppConfigProvider,
+    private val paidActionSettingsManager: PaidActionSettingsManager
+) : ViewModelUiState<WCSessionUiState>() {
+
+    val marketApiBaseUrl = appConfigProvider.marketApiBaseUrl
+
+    val closeLiveEvent = SingleLiveEvent<Unit>()
+    val showErrorLiveEvent = SingleLiveEvent<String?>()
+    val showNoInternetErrorLiveEvent = SingleLiveEvent<Unit>()
+
+    private var peerMeta: PeerMetaItem? = null
+    private var closeEnabled = false
+    private var connecting = false
+    private var buttonStates: WCSessionButtonStates? = null
+    private var hint: String? = null
+    private var showError: String? = null
+    private var status: Status? = null
+    private var pendingRequests = listOf<WCRequestViewItem>()
+    private var blockchainTypes: List<BlockchainType>? = null
+    private var connected: Boolean = topic != null
+    private var whiteListState: WCWhiteListState? = null
+    private var whiteListCache: List<ServiceWCWhitelist.WCWhiteList>? = null
+    private var hasSubscription = false
+    private var closeDialog = false
+    private var scamProtectionEnabled = paidActionSettingsManager.isActionEnabled(ScamProtection)
+    private var scamProtectionActionAllowed = UserSubscriptionManager.isActionAllowed(ScamProtection)
+    // Null while the sheet shows an already established session. The attestation describes the
+    // moment of connecting, and it is not carried on the session, so re-opening one has nothing to
+    // report — reporting "unknown" there would warn about sessions that were verified when approved.
+    private var verification: HSDAppVerification? = null
+
+    override fun createState() = WCSessionUiState(
+        peerMeta = peerMeta,
+        closeEnabled = closeEnabled,
+        connecting = connecting,
+        connected = connected,
+        buttonStates = buttonStates,
+        hint = hint,
+        showError = showError,
+        status = status,
+        pendingRequests = pendingRequests,
+        blockchainTypes = blockchainTypes,
+        whiteListState = whiteListState,
+        hasSubscription = hasSubscription,
+        scamProtectionActionAllowed = scamProtectionActionAllowed,
+        closeDialog = closeDialog,
+        verification = verification
+    )
+
+    private var sessionServiceState: WCSessionServiceState = WCSessionServiceState.Idle
+        set(value) {
+            field = value
+            sync(state = value, connection = WCDelegate.connectionAvailableEvent.value)
+        }
+
+    private var proposal: HSDAppProposal? = null
+    private var session: HSDAppSession? = null
+
+    init {
+        viewModelScope.launch {
+            WCDelegate.connectionAvailableEvent.collect {
+                sync(state = sessionServiceState, connection = it)
+            }
+        }
+
+        viewModelScope.launch {
+            WCDelegate.pendingRequestEvents.collect {
+                session?.let { existingSession ->
+                    pendingRequests = getPendingRequestViewItems(existingSession.topic)
+                    emitState()
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            WCDelegate.walletEvents.collect { event ->
+                when (event) {
+                    is HSDAppEvent.SessionDelete -> {
+                        session?.topic?.let { topic ->
+                            if (topic == event.topic) {
+                                sessionServiceState = Killed
+                            }
+                        }
+                    }
+
+                    is HSDAppEvent.Error -> {
+                        sessionServiceState = Invalid(event.throwable)
+                    }
+
+                    is HSDAppEvent.SessionSettled -> {
+                        val settledSession = event.session
+                        peerMeta = settledSession.metaData?.let {
+                            PeerMetaItem(
+                                it.name,
+                                it.url,
+                                it.description,
+                                it.icons.lastOrNull(),
+                                account?.name,
+                            )
+                        }
+                        this@WCSessionViewModel.session = settledSession
+                        sessionServiceState = Ready
+                    }
+
+                    is HSDAppEvent.SessionSettleError -> {
+                        sessionServiceState = Invalid(Throwable(event.errorMessage))
+                    }
+
+                    else -> Unit
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            WCDelegate.pendingRequestEvents.collect {
+                topic?.let {
+                    pendingRequests = getPendingRequestViewItems(it)
+                    emitState()
+                }
+            }
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            if (scamProtectionEnabled) {
+                whiteListState = WCWhiteListState.InProgress
+                whiteListCache = getWCWhiteList()
+                checkWhiteListStatus()
+            }
+        }
+
+        viewModelScope.launch {
+            UserSubscriptionManager.activeSubscriptionStateFlow.collect {
+                hasSubscription = it != null
+                scamProtectionActionAllowed = UserSubscriptionManager.isActionAllowed(ScamProtection)
+                emitState()
+            }
+        }
+
+        loadSessionProposal(topic)
+    }
+
+    private fun loadSessionProposal(topic: String?) {
+        if (topic != null) {
+            val existingSession = sessionManager.sessions.firstOrNull { it.topic == topic }
+            if (existingSession != null) {
+                blockchainTypes = existingSession.namespaces.values.flatMap { namespace ->
+                    namespace.chains?.mapNotNull { chain ->
+                        determineBlockchainType(chain)
+                    } ?: emptyList()
+                }
+
+                peerMeta = existingSession.metaData?.let {
+                    PeerMetaItem(
+                        it.name,
+                        it.url,
+                        it.description,
+                        it.icons.lastOrNull(),
+                        account?.name,
+                    )
+                }
+
+                session = existingSession
+                pendingRequests = getPendingRequestViewItems(topic)
+                sessionServiceState = Ready
+
+                if (whiteListCache != null) {
+                    checkWhiteListStatus()
+                }
+            }
+        } else {
+            WCDelegate.sessionProposalEvent?.let { sessionProposal ->
+                peerMeta = PeerMetaItem(
+                    sessionProposal.name,
+                    sessionProposal.url,
+                    sessionProposal.description,
+                    sessionProposal.icons.lastOrNull(),
+                    account?.name,
+                )
+
+                blockchainTypes = sessionProposal.optionalNamespaces.flatMap {
+                    it.value.chains?.mapNotNull { chain ->
+                        determineBlockchainType(chain)
+                    } ?: emptyList()
+                }
+
+                proposal = sessionProposal
+                verification = sessionProposal.verification
+
+                sessionServiceState = try {
+                    wcManager.validate(sessionProposal.requiredNamespaces)
+                    WaitingForApproveSession
+                } catch (e: Throwable) {
+                    Invalid(e)
+                }
+
+                if (whiteListCache != null) {
+                    checkWhiteListStatus()
+                }
+            } ?: run {
+                sessionServiceState = Invalid(RequestNotFoundError)
+            }
+        }
+    }
+
+    private fun getPendingRequestViewItems(topic: String): List<WCRequestViewItem> {
+        return DAppManager.getPendingRequests(topic).map { request ->
+            val methodData = wcManager.getMethodData(request)
+
+            WCRequestViewItem(
+                title = methodData?.title ?: "Unsupported",
+                subtitle = methodData?.network ?: "",
+                request = request
+            )
+        }
+    }
+
+    private suspend fun getWCWhiteList(): List<ServiceWCWhitelist.WCWhiteList> {
+        val url = URL(marketApiBaseUrl)
+        val path = "/v1/defi-protocols/dapps"
+        return try {
+            networkManager.getWCWhiteList("${url.protocol}://${url.host}", path)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun checkWhiteListStatus() {
+        val urlToCheck = getCurrentUrl()
+        val whiteList = whiteListCache
+        whiteListState = when {
+            urlToCheck.isNullOrEmpty() || whiteList.isNullOrEmpty() -> WCWhiteListState.Error
+            isUrlInWhiteList(urlToCheck, whiteList) -> WCWhiteListState.InWhiteList
+            else -> WCWhiteListState.NotInWhiteList
+        }
+        emitState()
+    }
+
+    private fun getCurrentUrl(): String? {
+        return when {
+            proposal != null -> proposal?.url
+            session != null -> session?.metaData?.url
+            peerMeta != null -> peerMeta?.url
+            else -> null
+        }
+    }
+
+    private fun isUrlInWhiteList(
+        url: String,
+        whiteList: List<ServiceWCWhitelist.WCWhiteList>
+    ): Boolean {
+        return WCWhitelistMatcher.isHostInWhiteList(url, whiteList.map { it.url })
+    }
+
+    private fun sync(state: WCSessionServiceState, connection: Boolean?) {
+        if (state == Killed) {
+            closeLiveEvent.postValue(Unit)
+            return
+        }
+
+        connecting = connection == null
+        closeEnabled = state == Ready
+        status = getStatus(connection)
+        hint = getHint(connection, state)
+
+        setButtons(state, connection)
+        setError(state)
+
+        emitState()
+    }
+
+    fun rejectProposal() {
+        val proposal = proposal ?: return
+
+        // Clear the pending proposal pointer synchronously so reEmitPendingWcEventIfNeeded() can't
+        // re-open this proposal when the sheet's removal re-resumes the screen underneath. reject()
+        // below only nulls it inside its async network callback, which races the sheet closing.
+        // Done after the guard above so session-only screens (no local proposal) don't clobber an
+        // unrelated pending proposal event.
+        WCDelegate.sessionProposalEvent = null
+
+        if (!connectivityManager.isConnected) {
+            showError = Translator.getString(R.string.Hud_Text_NoInternet)
+            emitState()
+            showNoInternetErrorLiveEvent.postValue(Unit)
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                reject(proposal.proposerPublicKey) {
+                    sessionServiceState = Killed
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                // The proposal may already be gone (RequestNotFoundError) or the relay call may
+                // fail. The user asked to dismiss either way, so close instead of crashing the
+                // coroutine or stranding the sheet; the dApp side times out on its own.
+            }
+            closeDialog = true
+            emitState()
+        }
+    }
+
+    fun connect() {
+        val proposal = proposal ?: return
+
+        if (!connectivityManager.isConnected) {
+            showError = Translator.getString(R.string.Hud_Text_NoInternet)
+            emitState()
+            showNoInternetErrorLiveEvent.postValue(Unit)
+            return
+        }
+
+        if (account == null) {
+            sessionServiceState = Invalid(NoSuitableAccount)
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                approve(proposal.proposerPublicKey)
+                connected = true
+                closeDialog = true
+                emitState()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                WCDelegate.sessionProposalEvent = null
+                // showErrorLiveEvent has no observer in the Compose sheet; surface the failure
+                // through uiState so the snackbar shows and the Connect button is re-enabled.
+                showError = getErrorMessage(t) ?: t.message ?: t.javaClass.simpleName
+                emitState()
+            }
+        }
+    }
+
+    fun disconnect() {
+        if (!connectivityManager.isConnected) {
+            showError = Translator.getString(R.string.Hud_Text_NoInternet)
+            emitState()
+            showNoInternetErrorLiveEvent.postValue(Unit)
+            return
+        }
+
+        val sessionNonNull = session ?: return
+
+        WCDelegate.deleteSession(
+            topic = sessionNonNull.topic,
+            onSuccess = {
+                sessionServiceState = Killed
+                closeDialog = true
+            },
+            onError = {
+                closeDialog = true
+            }
+        )
+    }
+
+    suspend fun approve(proposalPublicKey: String) {
+        val accountNonNull = account ?: return
+        return suspendCoroutine { continuation ->
+            if (DAppManager.getSessionProposals().any { it.proposerPublicKey == proposalPublicKey }) {
+                val namespaces = wcManager.getSupportedNamespaces(accountNonNull)
+                val sessionNamespaces = DAppManager.generateApprovedNamespaces(proposalPublicKey, namespaces)
+
+                DAppManager.approveSession(
+                    proposerPublicKey = proposalPublicKey,
+                    namespaces = sessionNamespaces,
+                    onSuccess = {
+                        continuation.resume(Unit)
+                        WCDelegate.sessionProposalEvent = null
+                    },
+                    onError = { error ->
+                        continuation.resumeWithException(error)
+                        WCDelegate.sessionProposalEvent = null
+                    }
+                )
+            } else {
+                // Resume with an error instead of suspending forever (which would also leave the
+                // Connect button latched disabled): the proposal is gone, e.g. already handled or
+                // expired.
+                continuation.resumeWithException(RequestNotFoundError)
+            }
+        }
+    }
+
+    suspend fun reject(proposalPublicKey: String, onSuccess: () -> Unit) {
+        return suspendCoroutine { continuation ->
+            if (DAppManager.getSessionProposals().any { it.proposerPublicKey == proposalPublicKey }) {
+                DAppManager.rejectSession(
+                    proposerPublicKey = proposalPublicKey,
+                    onSuccess = {
+                        continuation.resume(Unit)
+                        WCDelegate.sessionProposalEvent = null
+                        onSuccess.invoke()
+                    },
+                    onError = { error ->
+                        continuation.resumeWithException(error)
+                        WCDelegate.sessionProposalEvent = null
+                    }
+                )
+            } else {
+                // Same as approve(): never leave the continuation suspended forever.
+                continuation.resumeWithException(RequestNotFoundError)
+            }
+        }
+    }
+
+    private fun getStatus(connectionState: Boolean?): Status {
+        return when (connectionState) {
+            null -> Status.CONNECTING
+            true -> Status.ONLINE
+            false -> Status.OFFLINE
+        }
+    }
+
+    private fun setButtons(state: WCSessionServiceState, connection: Boolean?) {
+        buttonStates = WCSessionButtonStates(
+            connect = getConnectButtonState(state),
+            disconnect = getDisconnectButtonState(state, connection),
+            cancel = getCancelButtonState(state),
+            remove = getRemoveButtonState(state, connection),
+        )
+    }
+
+    private fun getCancelButtonState(state: WCSessionServiceState): WCButtonState {
+        return if (state != Ready) WCButtonState.Enabled else WCButtonState.Hidden
+    }
+
+    private fun getConnectButtonState(state: WCSessionServiceState): WCButtonState {
+        return when {
+            state == WaitingForApproveSession -> WCButtonState.Enabled
+            else -> WCButtonState.Hidden
+        }
+    }
+
+    private fun getDisconnectButtonState(state: WCSessionServiceState, connectionState: Boolean?): WCButtonState {
+        return when {
+            state == Ready && connectionState == true -> WCButtonState.Enabled
+            else -> WCButtonState.Hidden
+        }
+    }
+
+    private fun determineBlockchainType(chain: String): BlockchainType? {
+        val chainParts = chain.split(":")
+        val first = chainParts[0]
+
+        return when (first) {
+            "eip155" -> {
+                val chainId = chainParts[1].toIntOrNull()
+                chainId?.let {
+                    App.evmBlockchainManager.getBlockchain(it)
+                }?.type
+            }
+
+            "stellar" -> {
+                if (chainParts[1] == "pubnet") BlockchainType.Stellar else null
+            }
+
+            else -> null
+        }
+    }
+
+    private fun getRemoveButtonState(state: WCSessionServiceState, connectionState: Boolean?): WCButtonState {
+        return when {
+            state is Invalid -> WCButtonState.Hidden
+            connectionState == false && state is Ready -> WCButtonState.Enabled
+            else -> WCButtonState.Hidden
+        }
+    }
+
+    private fun setError(state: WCSessionServiceState) {
+        when {
+            state is Invalid && (state.error !is ValidationError) ->
+                showError = state.error.message ?: state.error::class.java.simpleName
+            // Don't clear a pending error here: sync() runs on every connectionAvailableEvent
+            // emission and would wipe an approve() failure before the sheet renders it. The
+            // error is consumed by errorShown() once displayed.
+            else -> {}
+        }
+    }
+
+    private fun getHint(connection: Boolean?, state: WCSessionServiceState): String? {
+        return when {
+            connection == false && (state == WaitingForApproveSession || state is Ready) ->
+                Translator.getString(R.string.WalletConnect_Reconnect_Hint)
+            connection == null -> null
+            state is Invalid -> getErrorMessage(state.error)
+            else -> null
+        }
+    }
+
+    private fun getErrorMessage(error: Throwable): String? {
+        return when (error) {
+            is UnsupportedChainId -> Translator.getString(R.string.WalletConnect_Error_UnsupportedChainId)
+            is NoSuitableAccount -> Translator.getString(R.string.WalletConnect_Error_NoSuitableAccount)
+            is NoSuitableEvmKit -> Translator.getString(R.string.WalletConnect_Error_NoSuitableEvmKit)
+            is RequestNotFoundError -> Translator.getString(R.string.WalletConnect_Error_RequestNotFoundError)
+            is ValidationError.UnsupportedChainNamespace -> Translator.getString(
+                R.string.WalletConnect_Error_UnsupportedChains,
+                error.chainNamespace
+            )
+            is ValidationError.UnsupportedChains -> Translator.getString(
+                R.string.WalletConnect_Error_UnsupportedChains,
+                error.chains.joinToString()
+            )
+            is ValidationError.UnsupportedMethods -> Translator.getString(
+                R.string.WalletConnect_Error_UnsupportedMethods,
+                error.methods.joinToString()
+            )
+            is ValidationError.UnsupportedEvents -> Translator.getString(
+                R.string.WalletConnect_Error_UnsupportedEvents,
+                error.events.joinToString()
+            )
+            else -> null
+        }
+    }
+
+    fun setRequestToOpen(request: HSDAppRequest) {
+        WCDelegate.sessionRequestEvent = request
+    }
+
+    fun errorShown() {
+        showError = null
+        emitState()
+    }
+}
+
+sealed class ValidationError : Throwable() {
+    class UnsupportedChainNamespace(val chainNamespace: String) : ValidationError()
+    class UnsupportedChains(val chains: List<String>) : ValidationError()
+    class UnsupportedMethods(val methods: List<String>) : ValidationError()
+    class UnsupportedEvents(val events: List<String>) : ValidationError()
+}

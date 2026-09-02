@@ -52,6 +52,8 @@ def has_cdata(value: str) -> bool:
 
 def escape_xml_value(value: str) -> str:
     """Escape characters that must be escaped in Android strings.xml values."""
+    # translations arrive as plain text — real newlines/tabs become Android escapes
+    value = value.replace('\n', '\\n').replace('\t', '\\t')
     # & first — convert XML quote entities to Android escapes, then
     # escape any bare & that isn't part of a remaining named entity
     value = value.replace('&apos;', "\\'")
@@ -94,12 +96,49 @@ def save_snapshot(snapshot: dict) -> None:
         json.dump(snapshot, f, indent=2, ensure_ascii=False, sort_keys=True)
 
 
+def unescape_android(value: str) -> str:
+    """Android strings.xml value → plain text for the translation prompt.
+
+    The model works with plain text and standard JSON escaping only;
+    escape_xml_value() re-applies the Android escaping on the way back.
+    Asking the model to emit Android escapes inside JSON values produced
+    invalid JSON (\\' is not a JSON escape; unescaped quotes end the string).
+    """
+    # backslash escapes: \n and \t map to their characters, any other
+    # escaped character (\', \", \@, \?, \\) drops the backslash
+    value = re.sub(r"\\(.)", lambda m: {"n": "\n", "t": "\t"}.get(m.group(1), m.group(1)), value)
+    # entities: quote entities too; &amp; last so it can't re-form others
+    value = value.replace("&lt;", "<").replace("&gt;", ">")
+    value = value.replace("&quot;", '"').replace("&apos;", "'")
+    value = value.replace("&amp;", "&")
+    return value
+
+
+def response_schema(keys) -> dict:
+    """JSON schema for the translation payload — constrained decoding makes
+    invalid JSON impossible (prompt-only compliance broke on long multilingual
+    values) and pins the exact {lang: {key: str}} shape."""
+    entry = {
+        "type": "object",
+        "properties": {key: {"type": "string"} for key in keys},
+        "required": list(keys),
+        "additionalProperties": False,
+    }
+    return {
+        "type": "object",
+        "properties": {lang: entry for lang in LANGUAGES},
+        "required": list(LANGUAGES),
+        "additionalProperties": False,
+    }
+
+
 def translate_new_strings(new_strings: dict[str, str]) -> dict[str, dict[str, str]]:
-    """Call Claude API. Returns {lang_code: {key: translated_value}}."""
+    """Call Claude API. Returns {lang_code: {key: translated_value}} as plain text."""
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
     strings_block = "\n".join(
-        f'<string name="{k}">{v}</string>' for k, v in new_strings.items()
+        f'<string name="{k}">{unescape_android(v)}</string>'
+        for k, v in new_strings.items()
     )
     lang_list = "\n".join(f"- {code}: {name}" for code, name in LANGUAGES.items())
 
@@ -114,8 +153,7 @@ English strings:
 Rules:
 - Keep name attributes exactly as-is (never translate the keys)
 - Preserve all Android format placeholders: %s, %d, %1$s, %2$s, %3$s, etc.
-- Preserve literal \\n newline sequences as \\n
-- Preserve XML entities &amp; &lt; &gt; — do NOT use &apos; or &quot;, use \' and \" instead (Android requirement)
+- Values are plain text: use standard JSON string escaping ONLY. Do not apply Android escaping — no backslash-apostrophe sequences, no XML entities. Multi-line values use the JSON \\n escape.
 - Return ONLY valid JSON with this exact structure:
 {{
   "de": {{"KeyName": "translated value", ...}},
@@ -127,12 +165,30 @@ No markdown fences, no explanation. Only the JSON object.
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=8192,
+        max_tokens=16000,
+        output_config={"format": {"type": "json_schema", "schema": response_schema(new_strings.keys())}},
         messages=[{"role": "user", "content": prompt}],
     )
 
     text = re.sub(r"```(?:json)?\s*|\s*```", "", message.content[0].text).strip()
-    return json.loads(text)
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as e:
+        print(f"    Model response was not valid JSON ({e}); first 500 chars:")
+        print(f"    {text[:500]!r}")
+        raise
+
+    # json.loads only checks syntax — enforce {lang: {key: str}} before the
+    # result is written into XML files
+    if not isinstance(data, dict):
+        raise ValueError(f"Translation payload is {type(data).__name__}, expected object")
+    for lang, entries in data.items():
+        if not isinstance(entries, dict):
+            raise ValueError(f"Translations for {lang!r} are {type(entries).__name__}, expected object")
+        for key, translated in entries.items():
+            if not isinstance(translated, str):
+                raise ValueError(f"Translation {lang!r}/{key!r} is {type(translated).__name__}, expected string")
+    return data
 
 
 def apply_translations(lang_file: str, new_translations: dict[str, str], deleted_keys: set[str]) -> None:
@@ -161,7 +217,9 @@ def apply_translations(lang_file: str, new_translations: dict[str, str], deleted
         )
         new_entry = f'<string name="{key}">{value}</string>'
         if existing_pat.search(content):
-            content = existing_pat.sub(new_entry, content)
+            # lambda keeps new_entry literal — as a replacement template,
+            # re.sub would turn the Android \n escapes into real newlines
+            content = existing_pat.sub(lambda _: new_entry, content)
         else:
             content = content.replace("</resources>", f"    {new_entry}\n</resources>")
 

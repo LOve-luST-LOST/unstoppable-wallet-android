@@ -1,6 +1,6 @@
 //package io.horizontalsystems.bankwallet.modules.send
 //
-//import io.horizontalsystems.bankwallet.entities.*
+//import io.horizontalsystems.walletkit.entities.*
 //import org.junit.Assert
 //import org.junit.Before
 //import org.junit.Test
